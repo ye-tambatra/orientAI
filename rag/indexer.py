@@ -66,8 +66,11 @@ for md_file in md_files:
             
         chunk_id = f"{meta['id']}_chunk_{i}"
         
+        headers_text = " ".join([str(v) for v in doc.metadata.values()])
+        enriched_content = f"{headers_text}\n{doc.page_content}"
+        
         collection.add(
-            documents=[doc.page_content],
+            documents=[enriched_content],
             metadatas=[chunk_meta],
             ids=[chunk_id]
         )

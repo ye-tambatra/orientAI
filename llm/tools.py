@@ -11,7 +11,6 @@ import datetime
 
 from rag.retriever import retrieve_context
 
-
 def get_current_time() -> str:
     """Retourne la date et l'heure actuelles.
 
@@ -20,7 +19,6 @@ def get_current_time() -> str:
     """
     return datetime.datetime.now().isoformat()
 
-
 def echo(text: str) -> str:
     """Répète le texte donné mot pour mot.
 
@@ -28,7 +26,6 @@ def echo(text: str) -> str:
     répéter quelque chose.
     """
     return text
-
 
 def rechercher_formation(mot_cle: str) -> str:
     """Recherche les filières/formations de l'ISPM en rapport avec un mot-clé.
@@ -43,23 +40,19 @@ def rechercher_formation(mot_cle: str) -> str:
     query = f"Filière ou formation en rapport avec {mot_cle} à l'ISPM"
     return retrieve_context(query, n_results=4)
 
+def verifier_prerequis(filiere: str = "", serie_bac: str = "") -> str:
+    """Vérifie les conditions d'admission/prérequis, documents à fournir et séries de baccalauréat.
 
-def verifier_prerequis(filiere: str, serie_bac: str = "") -> str:
-    """Vérifie les conditions d'admission/prérequis pour une filière donnée.
-
-    Utilise ceci quand l'utilisateur demande s'il peut intégrer une filière,
+    Utilise ceci quand l'utilisateur demande s'il peut intégrer l'ISPM,
     quels documents ou séries de baccalauréat sont requis.
 
     Args:
-        filiere: Le nom ou sigle de la filière concernée (ex: ISAIA, IMTICIA).
+        filiere: Le nom ou sigle de la filière concernée (ex: ISAIA, IMTICIA). Laisser vide si non précisée.
         serie_bac: La série du baccalauréat de l'utilisateur, si connue
             (ex: C, D, S). Laisser vide si non précisée.
     """
-    query = f"Conditions d'admission et prérequis pour la filière {filiere}"
-    if serie_bac:
-        query += f" pour un baccalauréat série {serie_bac}"
-    return retrieve_context(query, n_results=3)
-
+    query = "Conditions d'accès, d'admission et prérequis en première année"
+    return retrieve_context(query, n_results=4)
 
 def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
     """Compare deux filières/parcours de l'ISPM entre elles.
@@ -72,16 +65,15 @@ def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
         filiere_b: Le nom ou sigle de la deuxième filière.
     """
     contexte_a = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_a}", n_results=3
+        f"Présentation et parcours de la filière {filiere_a}", n_results=10
     )
     contexte_b = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_b}", n_results=3
+        f"Présentation et parcours de la filière {filiere_b}", n_results=10
     )
     return (
         f"== {filiere_a} ==\n{contexte_a}\n\n"
         f"== {filiere_b} ==\n{contexte_b}"
     )
-
 
 def rechercher_competences(filiere: str) -> str:
     """Recherche les matières/compétences enseignées en première année d'une filière.
@@ -96,8 +88,7 @@ def rechercher_competences(filiere: str) -> str:
         f"Liste des matières et compétences enseignées en première année "
         f"de la filière {filiere}"
     )
-    return retrieve_context(query, n_results=3)
-
+    return retrieve_context(query, n_results=15)
 
 def expliquer_recommandation(filiere: str, raison: str = "") -> str:
     """Rassemble les informations pour justifier pourquoi une filière peut convenir.
@@ -117,7 +108,6 @@ def expliquer_recommandation(filiere: str, raison: str = "") -> str:
         query += f", en lien avec {raison}"
     return retrieve_context(query, n_results=4)
 
-
 def identifier_debouches(filiere: str) -> str:
     """Cherche les débouchés professionnels/perspectives de carrière d'une filière.
 
@@ -133,7 +123,6 @@ def identifier_debouches(filiere: str) -> str:
         "Les débouchés professionnels ne sont pas encore renseignés dans la "
         f"base de connaissances pour la filière {filiere}."
     )
-
 
 def analyser_profil_ml(interets: list[str], points_forts: list[str] | None = None) -> str:
     """Analyse le profil d'un utilisateur pour suggérer des filières adaptées.
@@ -152,7 +141,6 @@ def analyser_profil_ml(interets: list[str], points_forts: list[str] | None = Non
         "disponible."
     )
 
-
 def calculer_score_adequation(filiere: str, interets: list[str] | None = None) -> str:
     """Calcule un score d'adéquation entre un utilisateur et une filière.
 
@@ -168,7 +156,6 @@ def calculer_score_adequation(filiere: str, interets: list[str] | None = None) -
         "Le calcul de score d'adéquation avec une filière n'est pas encore "
         "disponible."
     )
-
 
 TOOLS = [
     get_current_time,
