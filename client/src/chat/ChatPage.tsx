@@ -68,9 +68,7 @@ export default function ChatPage() {
             <Box
               key={message.id}
               sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: isUser ? 'flex-end' : 'flex-start',
+                display: 'block',
                 width: '100%',
                 mb: 2,
               }}
@@ -80,7 +78,10 @@ export default function ChatPage() {
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'flex-start',
+                  width: 'fit-content',
                   maxWidth: '85%',
+                  ml: isUser ? 'auto' : 0,
+                  mr: !isUser ? 'auto' : 0,
                   gap: 1,
                 }}
               >

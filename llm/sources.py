@@ -21,6 +21,7 @@ RAG_TOOL_NAMES = {
     "comparer_parcours",
     "rechercher_competences",
     "expliquer_recommandation",
+    "obtenir_informations_ispm",
 }
 
 _SOURCE_BLOCK_RE = re.compile(

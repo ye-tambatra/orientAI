@@ -23,7 +23,7 @@ SYSTEM_INSTRUCTION = (
     "ET rechercher les matières enseignées). "
     "REGLE TRES IMPORTANTE : A chaque nouvelle question de l'utilisateur, tu DOIS "
     "OBLIGATOIREMENT utiliser au moins un de tes outils de recherche (rechercher_competences, "
-    "verifier_prerequis, etc.) pour retrouver l'information, même si tu t'en souviens d'une "
+    "verifier_prerequis, obtenir_informations_ispm, etc.) pour retrouver l'information, même si tu t'en souviens d'une "
     "question précédente. Ne te repose jamais uniquement sur ta mémoire, appelle toujours "
     "un outil afin que les sources soient correctement affichées à l'utilisateur."
 )

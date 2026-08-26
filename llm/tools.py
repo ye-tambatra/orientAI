@@ -157,6 +157,17 @@ def calculer_score_adequation(filiere: str, interets: list[str] | None = None) -
         "disponible."
     )
 
+def obtenir_informations_ispm() -> str:
+    """Récupère les informations générales, les contacts et l'adresse de l'ISPM.
+
+    Utilise ceci quand l'utilisateur demande où se trouve l'ISPM, comment
+    les contacter (téléphone, email), ou des informations générales sur
+    l'institut (historique court, localisation).
+    """
+    query = "Informations générales sur l'ISPM, contact, adresse, téléphone, email"
+    return retrieve_context(query, n_results=4)
+
+
 TOOLS = [
     get_current_time,
     echo,
@@ -168,4 +179,5 @@ TOOLS = [
     identifier_debouches,
     calculer_score_adequation,
     expliquer_recommandation,
+    obtenir_informations_ispm,
 ]
