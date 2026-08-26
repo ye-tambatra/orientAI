@@ -103,9 +103,17 @@ TAGS: tuple[Tag, ...] = (
     Tag("economie", "Economie",
         ("economie", "macroeconomie", "microeconomie"),
         {"economie_management": .9, "data_ia": .4, "commerce_gestion": .3}),
-    Tag("multimedia_design", "Multimédia / Design",
-        ("multimedia", "design", "creation", "audiovisuel", "graphisme", " son", "pao"),
+    Tag("multimedia_design", "Multimédia / Design numérique",
+        ("multimedia", "design", "audiovisuel", "graphisme", " son", "pao"),
         {"informatique_numerique": .95}),
+    Tag("art_creation", "Art / Création",
+        # "creation"/"artistique"/"creativite" sont volontairement séparés de
+        # multimedia_design : "j'aime l'art et la création" ne veut pas dire
+        # "je veux faire du multimédia numérique" — sans ce tag séparé, tout
+        # intérêt créatif était mécaniquement aspiré vers l'informatique.
+        ("creation", "artistique", "creativite", "arts plastiques", "art culinaire"),
+        {"informatique_numerique": .4, "hotellerie_restauration": .4,
+         "tourisme_environnement": .3, "commerce_gestion": .2}),
     Tag("communication", "Communication",
         ("communication", "francais"),
         {"informatique_numerique": .5, "commerce_gestion": .4, "hotellerie_restauration": .4}),

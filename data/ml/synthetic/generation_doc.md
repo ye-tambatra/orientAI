@@ -69,4 +69,4 @@ Consistency controls applied
 - `n_per_class` = 150 profils par domaine
 - `seed` = 42 (reproductible)
 - Total de profils générés : 2250
-- Profils avec étiquette bruitée (`label_noise=True`) : 145 (6.4%)
+- Profils avec étiquette bruitée (`label_noise=True`) : 136 (6.0%)

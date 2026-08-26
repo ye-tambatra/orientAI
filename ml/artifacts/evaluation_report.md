@@ -4,80 +4,80 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 
 - Profils d'entraînement (synthétiques) : 1800
 - Profils de validation (synthétiques, tenus à part) : 450
-- **Modèle sélectionné (meilleur macro-F1 en validation) : `softmax_regression`**
+- **Modèle sélectionné (meilleur macro-F1 en validation) : `baseline_centroide`**
 
 ## Comparaison des approches (validation synthétique)
 
 | Modèle | Accuracy | Top-3 accuracy | Macro-F1 | MRR | Stabilité |
 |---|---|---|---|---|---|
-| baseline_centroide | 0.918 | 0.962 | 0.917 | 0.944 | 0.985 |
-| knn | 0.913 | 0.953 | 0.913 | 0.937 | 0.986 |
-| softmax_regression | 0.929 | 0.958 | 0.929 | 0.950 | 0.984 |
+| baseline_centroide | 0.902 | 0.971 | 0.903 | 0.939 | 0.984 |
+| knn | 0.900 | 0.951 | 0.900 | 0.930 | 0.973 |
+| softmax_regression | 0.902 | 0.976 | 0.903 | 0.940 | 0.983 |
 
 `baseline_centroide` est le modèle de référence simple exigé par le brief (section 7). `stabilité` = fraction des profils dont le top-1 ne change pas sous une petite perturbation gaussienne du vecteur de traits (voir `ml.metrics.stability_score`).
 
-## Détail du modèle sélectionné (`softmax_regression`)
+## Détail du modèle sélectionné (`baseline_centroide`)
 
 ### Rapport par domaine (precision / recall / F1 / support)
 
 | Domaine | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| agriculture_elevage — Agriculture & Élevage | 0.85 | 1.00 | 0.92 | 23 |
-| agroalimentaire — Agroalimentaire | 0.97 | 0.97 | 0.97 | 34 |
-| chimie_mines — Chimie, Mines & Industries Pétrolières | 0.91 | 0.83 | 0.87 | 24 |
-| commerce_gestion — Commerce, Marketing & Gestion des Affaires | 0.97 | 0.91 | 0.94 | 34 |
-| data_ia — Data Science, Statistique & Intelligence Artificielle | 0.91 | 0.86 | 0.88 | 35 |
-| droit — Droit & Techniques Juridiques | 0.94 | 0.97 | 0.95 | 30 |
-| economie_management — Économie & Management de Projet | 0.93 | 0.90 | 0.91 | 29 |
-| finance_comptabilite — Finance & Comptabilité | 0.86 | 0.97 | 0.91 | 33 |
-| genie_civil — Génie Civil & Architecture | 0.89 | 0.89 | 0.89 | 28 |
-| genie_industriel — Génie Industriel, Mécanique & Électrotechnique | 0.91 | 0.97 | 0.94 | 32 |
-| hotellerie_restauration — Hôtellerie & Restauration | 0.96 | 0.96 | 0.96 | 27 |
-| informatique_numerique — Informatique & Numérique (développement, gestion, multimédia) | 0.97 | 0.86 | 0.91 | 35 |
-| pharmacie_sante — Pharmacie & Santé | 1.00 | 0.89 | 0.94 | 36 |
-| reseaux_electronique — Réseaux, Électronique & Systèmes | 0.93 | 1.00 | 0.96 | 26 |
-| tourisme_environnement — Tourisme & Environnement | 0.92 | 1.00 | 0.96 | 24 |
+| agriculture_elevage — Agriculture & Élevage | 0.86 | 0.96 | 0.91 | 26 |
+| agroalimentaire — Agroalimentaire | 0.94 | 0.85 | 0.89 | 34 |
+| chimie_mines — Chimie, Mines & Industries Pétrolières | 0.97 | 0.80 | 0.88 | 35 |
+| commerce_gestion — Commerce, Marketing & Gestion des Affaires | 0.93 | 0.90 | 0.92 | 31 |
+| data_ia — Data Science, Statistique & Intelligence Artificielle | 0.85 | 0.92 | 0.88 | 36 |
+| droit — Droit & Techniques Juridiques | 0.90 | 0.96 | 0.93 | 28 |
+| economie_management — Économie & Management de Projet | 0.88 | 0.76 | 0.81 | 29 |
+| finance_comptabilite — Finance & Comptabilité | 0.77 | 0.86 | 0.81 | 28 |
+| genie_civil — Génie Civil & Architecture | 0.86 | 0.97 | 0.91 | 32 |
+| genie_industriel — Génie Industriel, Mécanique & Électrotechnique | 0.91 | 0.94 | 0.93 | 33 |
+| hotellerie_restauration — Hôtellerie & Restauration | 0.93 | 1.00 | 0.96 | 27 |
+| informatique_numerique — Informatique & Numérique (développement, gestion, multimédia) | 0.96 | 0.79 | 0.87 | 33 |
+| pharmacie_sante — Pharmacie & Santé | 0.92 | 0.88 | 0.90 | 25 |
+| reseaux_electronique — Réseaux, Électronique & Systèmes | 0.94 | 1.00 | 0.97 | 34 |
+| tourisme_environnement — Tourisme & Environnement | 0.95 | 1.00 | 0.97 | 19 |
 
 ### Table de calibration (confiance du top-1 vs exactitude empirique)
 
 | Intervalle de confiance | n | Confiance moyenne | Exactitude empirique |
 |---|---|---|---|
-| [0.0, 0.3) | 3 | 0.27 | 0.67 |
-| [0.3, 0.5) | 16 | 0.42 | 0.75 |
-| [0.5, 0.7) | 51 | 0.60 | 0.90 |
-| [0.7, 0.9) | 257 | 0.84 | 0.94 |
-| [0.9, 1.0] | 123 | 0.93 | 0.94 |
+| [0.0, 0.3) | 3 | 0.23 | 0.33 |
+| [0.3, 0.5) | 44 | 0.44 | 0.64 |
+| [0.5, 0.7) | 125 | 0.61 | 0.90 |
+| [0.7, 0.9) | 229 | 0.83 | 0.94 |
+| [0.9, 1.0] | 49 | 0.92 | 0.98 |
 
 ### Matrice de confusion (lignes = vrai, colonnes = prédit)
 
 | | agriculture_elevage | agroalimentaire | chimie_mines | commerce_gestion | data_ia | droit | economie_management | finance_comptabilite | genie_civil | genie_industriel | hotellerie_restauration | informatique_numerique | pharmacie_sante | reseaux_electronique | tourisme_environnement |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **agriculture_elevage** | 23 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **agroalimentaire** | 0 | 33 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **chimie_mines** | 0 | 1 | 20 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 |
-| **commerce_gestion** | 0 | 0 | 0 | 31 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
-| **data_ia** | 0 | 0 | 0 | 0 | 30 | 0 | 1 | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 0 |
-| **droit** | 0 | 0 | 0 | 0 | 0 | 29 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| **economie_management** | 0 | 0 | 0 | 0 | 0 | 1 | 26 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 |
-| **finance_comptabilite** | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 32 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **genie_civil** | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 25 | 1 | 0 | 0 | 0 | 0 | 0 |
-| **genie_industriel** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 31 | 0 | 0 | 0 | 0 | 0 |
-| **hotellerie_restauration** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 26 | 0 | 0 | 0 | 1 |
-| **informatique_numerique** | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 2 | 0 | 0 | 0 | 30 | 0 | 1 | 0 |
-| **pharmacie_sante** | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 32 | 0 | 0 |
-| **reseaux_electronique** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 26 | 0 |
-| **tourisme_environnement** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 24 |
+| **agriculture_elevage** | 25 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **agroalimentaire** | 2 | 29 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 |
+| **chimie_mines** | 0 | 0 | 28 | 0 | 1 | 0 | 0 | 0 | 3 | 2 | 0 | 0 | 0 | 1 | 0 |
+| **commerce_gestion** | 0 | 0 | 0 | 28 | 0 | 0 | 0 | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 0 |
+| **data_ia** | 0 | 0 | 0 | 0 | 33 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 |
+| **droit** | 0 | 0 | 0 | 0 | 0 | 27 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+| **economie_management** | 0 | 0 | 0 | 1 | 0 | 3 | 22 | 3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **finance_comptabilite** | 0 | 0 | 0 | 1 | 1 | 0 | 2 | 24 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **genie_civil** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 31 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **genie_industriel** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 31 | 0 | 0 | 0 | 0 | 0 |
+| **hotellerie_restauration** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 27 | 0 | 0 | 0 | 0 |
+| **informatique_numerique** | 0 | 0 | 0 | 0 | 4 | 0 | 1 | 0 | 1 | 0 | 0 | 26 | 0 | 1 | 0 |
+| **pharmacie_sante** | 2 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 22 | 0 | 0 |
+| **reseaux_electronique** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 34 | 0 |
+| **tourisme_environnement** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 19 |
 
 ### Analyse d'erreurs (exemples de validation mal classés)
 
-- Matières = « Biologie / Santé, Agriculture / Elevage », intérêts = « Biologie / Santé, Agriculture / Elevage » → vrai **pharmacie_sante**, prédit **agriculture_elevage** *(étiquette bruitée par construction)*
-- Matières = « Droit / Juridique, Langues étrangères », intérêts = « Droit / Juridique, Langues étrangères » → vrai **commerce_gestion**, prédit **droit** *(étiquette bruitée par construction)*
-- Matières = « Mécanique / Industrie, Mines / Géologie, Mines / Géologie, Mécanique / Industrie », intérêts = « Chimie, Mines / Géologie, Chimie » → vrai **agroalimentaire**, prédit **chimie_mines** *(étiquette bruitée par construction)*
-- Matières = « Tourisme / Environnement, Langues étrangères », intérêts = « Tourisme / Environnement, Langues étrangères » → vrai **economie_management**, prédit **tourisme_environnement** *(étiquette bruitée par construction)*
-- Matières = « Mathématiques, Langues étrangères, Statistiques / Données », intérêts = « Mathématiques, Finance / Comptabilité » → vrai **data_ia**, prédit **finance_comptabilite** *(étiquette bruitée par construction)*
-- Matières = « Langues étrangères, Tourisme / Environnement », intérêts = « Hôtellerie / Accueil » → vrai **hotellerie_restauration**, prédit **tourisme_environnement**
-- Matières = « Biologie / Santé, Agriculture / Elevage », intérêts = « Agriculture / Elevage » → vrai **pharmacie_sante**, prédit **agriculture_elevage** *(étiquette bruitée par construction)*
+- Matières = « Mathématiques, Gestion / Entreprise, Mathématiques », intérêts = « Gestion / Entreprise » → vrai **finance_comptabilite**, prédit **economie_management**
+- Matières = « Langues étrangères, Mathématiques, Statistiques / Données », intérêts = « Langues étrangères, Gestion / Entreprise » → vrai **economie_management**, prédit **finance_comptabilite**
+- Matières = « Statistiques / Données, Economie, Statistiques / Données, Intelligence artificielle », intérêts = « Statistiques / Données, Intelligence artificielle, Mathématiques » → vrai **chimie_mines**, prédit **data_ia** *(étiquette bruitée par construction)*
+- Matières = « Intelligence artificielle, Informatique / Programmation », intérêts = « Intelligence artificielle » → vrai **informatique_numerique**, prédit **data_ia**
+- Matières = « Statistiques / Données, Statistiques / Données, Statistiques / Données, Finance / Comptabilité », intérêts = « Mathématiques » → vrai **genie_industriel**, prédit **finance_comptabilite** *(étiquette bruitée par construction)*
 - Matières = « Droit / Juridique, Langues étrangères », intérêts = « Droit / Juridique » → vrai **economie_management**, prédit **droit** *(étiquette bruitée par construction)*
+- Matières = « Multimédia / Design numérique, Informatique / Programmation », intérêts = « Informatique / Programmation, Multimédia / Design numérique » → vrai **data_ia**, prédit **informatique_numerique** *(étiquette bruitée par construction)*
+- Matières = « Mécanique / Industrie, Mécanique / Industrie », intérêts = « Mathématiques, Mathématiques » → vrai **chimie_mines**, prédit **genie_civil**
 
 ### Étude de biais
 
@@ -85,13 +85,13 @@ Aucun attribut démographique (genre, âge, origine) n'est utilisé par le modè
 
 | Série bac | Exactitude (sous-groupe) |
 |---|---|
-| Autre | 0.93 |
-| D | 0.91 |
-| C | 0.89 |
-| A | 0.89 |
+| D | 0.89 |
+| A | 0.92 |
+| S | 0.93 |
+| Autre | 0.90 |
+| Technique | 0.64 |
 | L | 0.94 |
-| Technique | 0.92 |
-| S | 0.98 |
+| C | 0.91 |
 
 ## Généralisation : évaluation sur l'enquête réelle
 
@@ -103,12 +103,12 @@ Aucun attribut démographique (genre, âge, origine) n'est utilisé par le modè
 
 | Répondant | Population | Parcours déclaré | Domaines candidats | Top-3 prédit | Filières ISPM (top-1) | Top-1 ok | Top-3 ok |
 |---|---|---|---|---|---|---|---|
-| R001 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | data_ia, reseaux_electronique, informatique_numerique | ISAIA, IGGLIA | ✅ | ✅ |
-| R002 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | data_ia, genie_industriel, reseaux_electronique | ISAIA, IGGLIA | ✅ | ✅ |
-| R003 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, reseaux_electronique, data_ia | IGGLIA, IMTICIA | ✅ | ✅ |
-| R004 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, reseaux_electronique, data_ia | IGGLIA, IMTICIA | ✅ | ✅ |
-| R005 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | commerce_gestion, hotellerie_restauration, informatique_numerique | CAA | ❌ | ✅ |
-| R006 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | data_ia, reseaux_electronique, informatique_numerique | ISAIA, IGGLIA | ✅ | ✅ |
+| R001 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | reseaux_electronique, data_ia, informatique_numerique | ESIIA | ✅ | ✅ |
+| R002 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | reseaux_electronique, data_ia, genie_industriel | ESIIA | ✅ | ✅ |
+| R003 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, data_ia, reseaux_electronique | IGGLIA, IMTICIA | ✅ | ✅ |
+| R004 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, data_ia, reseaux_electronique | IGGLIA, IMTICIA | ✅ | ✅ |
+| R005 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | hotellerie_restauration, commerce_gestion, informatique_numerique | TEH | ❌ | ✅ |
+| R006 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | reseaux_electronique, data_ia, informatique_numerique | ESIIA | ✅ | ✅ |
 
 ## Limites générales du jeu de données et du modèle
 
