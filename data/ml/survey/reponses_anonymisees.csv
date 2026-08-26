@@ -1,0 +1,7 @@
+respondent_id,population,collected_at,matieres_preferees,centres_interet,serie_bac,parcours_declare,domaines_candidats,satisfaction,metier_correspond,exclu_raison
+R001,etudiant_lyceen,2026-08-26 15:18:55,,"Intelligence artificielle, Programmation",,Intelligence Artificielle,data_ia|informatique_numerique|reseaux_electronique,3.0,Plutôt oui,
+R002,etudiant_lyceen,2026-08-26 15:19:44,"Mathématiques, Physique, Informatique",Intelligence artificielle,Série S,Intelligence Artificielle,data_ia|informatique_numerique|reseaux_electronique,3.0,Plutôt oui,
+R003,etudiant_lyceen,2026-08-26 15:28:25,,Intelligence artificielle,,Informatique / Technologies de l’Information et de la Communication,informatique_numerique|data_ia|reseaux_electronique,3.0,Plutôt oui,
+R004,etudiant_lyceen,2026-08-26 15:29:58,,Intelligence artificielle,,Informatique / Technologies de l’Information et de la Communication,informatique_numerique|data_ia|reseaux_electronique,4.0,Plutôt oui,
+R005,etudiant_lyceen,2026-08-26 15:31:14,,"Communication, Autre",,Informatique / Technologies de l’Information et de la Communication,informatique_numerique|data_ia|reseaux_electronique,2.0,Plutôt non,
+R006,etudiant_lyceen,2026-08-26 15:34:33,,"Intelligence artificielle, Programmation",,Informatique / Technologies de l’Information et de la Communication,informatique_numerique|data_ia|reseaux_electronique,3.0,Plutôt oui,

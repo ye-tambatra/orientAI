@@ -1,0 +1,1373 @@
+{
+  "selected_model": "softmax_regression",
+  "n_train": 1800,
+  "n_val": 450,
+  "results_on_synthetic_val": {
+    "baseline_centroide": {
+      "name": "baseline_centroide",
+      "accuracy": 0.9177777777777778,
+      "top3_accuracy": 0.9577777777777777,
+      "macro_f1": 0.9169640372373025,
+      "mrr": 0.9439559082892417,
+      "stability": 0.984,
+      "per_class": {
+        "agriculture_elevage": {
+          "precision": 0.8214285714285714,
+          "recall": 1.0,
+          "f1": 0.9019607843137255,
+          "support": 23
+        },
+        "agroalimentaire": {
+          "precision": 0.9705882352941176,
+          "recall": 0.9705882352941176,
+          "f1": 0.9705882352941176,
+          "support": 34
+        },
+        "chimie_mines": {
+          "precision": 0.9090909090909091,
+          "recall": 0.8333333333333334,
+          "f1": 0.8695652173913043,
+          "support": 24
+        },
+        "commerce_gestion": {
+          "precision": 0.96875,
+          "recall": 0.9117647058823529,
+          "f1": 0.9393939393939394,
+          "support": 34
+        },
+        "data_ia": {
+          "precision": 0.8571428571428571,
+          "recall": 0.8571428571428571,
+          "f1": 0.8571428571428571,
+          "support": 35
+        },
+        "droit": {
+          "precision": 0.9354838709677419,
+          "recall": 0.9666666666666667,
+          "f1": 0.9508196721311476,
+          "support": 30
+        },
+        "economie_management": {
+          "precision": 0.9285714285714286,
+          "recall": 0.896551724137931,
+          "f1": 0.912280701754386,
+          "support": 29
+        },
+        "finance_comptabilite": {
+          "precision": 0.8648648648648649,
+          "recall": 0.9696969696969697,
+          "f1": 0.9142857142857143,
+          "support": 33
+        },
+        "genie_civil": {
+          "precision": 0.8928571428571429,
+          "recall": 0.8928571428571429,
+          "f1": 0.8928571428571429,
+          "support": 28
+        },
+        "genie_industriel": {
+          "precision": 0.9117647058823529,
+          "recall": 0.96875,
+          "f1": 0.9393939393939394,
+          "support": 32
+        },
+        "hotellerie_restauration": {
+          "precision": 0.8666666666666667,
+          "recall": 0.9629629629629629,
+          "f1": 0.912280701754386,
+          "support": 27
+        },
+        "informatique_numerique": {
+          "precision": 1.0,
+          "recall": 0.8,
+          "f1": 0.888888888888889,
+          "support": 35
+        },
+        "pharmacie_sante": {
+          "precision": 1.0,
+          "recall": 0.8611111111111112,
+          "f1": 0.9253731343283582,
+          "support": 36
+        },
+        "reseaux_electronique": {
+          "precision": 0.9285714285714286,
+          "recall": 1.0,
+          "f1": 0.962962962962963,
+          "support": 26
+        },
+        "tourisme_environnement": {
+          "precision": 0.9166666666666666,
+          "recall": 0.9166666666666666,
+          "f1": 0.9166666666666666,
+          "support": 24
+        }
+      },
+      "confusion_matrix": [
+        [
+          23,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          33,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          20,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          31,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          30,
+          0,
+          1,
+          2,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          29,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          26,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          32,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          25,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          31,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          26,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          28,
+          0,
+          1,
+          0
+        ],
+        [
+          5,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          31,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          26,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          22
+        ]
+      ],
+      "calibration": [
+        {
+          "intervalle": "[0.0, 0.3)",
+          "n": 4,
+          "confiance_moyenne": 0.29087597131729126,
+          "exactitude_empirique": 0.75
+        },
+        {
+          "intervalle": "[0.3, 0.5)",
+          "n": 39,
+          "confiance_moyenne": 0.44297370314598083,
+          "exactitude_empirique": 0.7692307692307693
+        },
+        {
+          "intervalle": "[0.5, 0.7)",
+          "n": 135,
+          "confiance_moyenne": 0.6035224795341492,
+          "exactitude_empirique": 0.9333333333333333
+        },
+        {
+          "intervalle": "[0.7, 0.9)",
+          "n": 238,
+          "confiance_moyenne": 0.827222466468811,
+          "exactitude_empirique": 0.9243697478991597
+        },
+        {
+          "intervalle": "[0.9, 1.0]",
+          "n": 34,
+          "confiance_moyenne": 0.9183893203735352,
+          "exactitude_empirique": 1.0
+        }
+      ]
+    },
+    "knn": {
+      "name": "knn",
+      "accuracy": 0.9133333333333333,
+      "top3_accuracy": 0.9488888888888889,
+      "macro_f1": 0.9128875617749006,
+      "mrr": 0.9364730023063357,
+      "stability": 0.983111111111111,
+      "per_class": {
+        "agriculture_elevage": {
+          "precision": 0.8214285714285714,
+          "recall": 1.0,
+          "f1": 0.9019607843137255,
+          "support": 23
+        },
+        "agroalimentaire": {
+          "precision": 0.9428571428571428,
+          "recall": 0.9705882352941176,
+          "f1": 0.9565217391304348,
+          "support": 34
+        },
+        "chimie_mines": {
+          "precision": 0.9090909090909091,
+          "recall": 0.8333333333333334,
+          "f1": 0.8695652173913043,
+          "support": 24
+        },
+        "commerce_gestion": {
+          "precision": 0.96875,
+          "recall": 0.9117647058823529,
+          "f1": 0.9393939393939394,
+          "support": 34
+        },
+        "data_ia": {
+          "precision": 0.8571428571428571,
+          "recall": 0.8571428571428571,
+          "f1": 0.8571428571428571,
+          "support": 35
+        },
+        "droit": {
+          "precision": 0.9354838709677419,
+          "recall": 0.9666666666666667,
+          "f1": 0.9508196721311476,
+          "support": 30
+        },
+        "economie_management": {
+          "precision": 0.9285714285714286,
+          "recall": 0.896551724137931,
+          "f1": 0.912280701754386,
+          "support": 29
+        },
+        "finance_comptabilite": {
+          "precision": 0.8421052631578947,
+          "recall": 0.9696969696969697,
+          "f1": 0.9014084507042254,
+          "support": 33
+        },
+        "genie_civil": {
+          "precision": 0.8928571428571429,
+          "recall": 0.8928571428571429,
+          "f1": 0.8928571428571429,
+          "support": 28
+        },
+        "genie_industriel": {
+          "precision": 0.9117647058823529,
+          "recall": 0.96875,
+          "f1": 0.9393939393939394,
+          "support": 32
+        },
+        "hotellerie_restauration": {
+          "precision": 0.8666666666666667,
+          "recall": 0.9629629629629629,
+          "f1": 0.912280701754386,
+          "support": 27
+        },
+        "informatique_numerique": {
+          "precision": 1.0,
+          "recall": 0.7714285714285715,
+          "f1": 0.870967741935484,
+          "support": 35
+        },
+        "pharmacie_sante": {
+          "precision": 1.0,
+          "recall": 0.8333333333333334,
+          "f1": 0.9090909090909091,
+          "support": 36
+        },
+        "reseaux_electronique": {
+          "precision": 0.9285714285714286,
+          "recall": 1.0,
+          "f1": 0.962962962962963,
+          "support": 26
+        },
+        "tourisme_environnement": {
+          "precision": 0.9166666666666666,
+          "recall": 0.9166666666666666,
+          "f1": 0.9166666666666666,
+          "support": 24
+        }
+      },
+      "confusion_matrix": [
+        [
+          23,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          33,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          20,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          31,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          30,
+          0,
+          1,
+          2,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          29,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          26,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          32,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          25,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          31,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          26,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0,
+          27,
+          0,
+          1,
+          0
+        ],
+        [
+          5,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          30,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          26,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          22
+        ]
+      ],
+      "calibration": [
+        {
+          "intervalle": "[0.0, 0.3)",
+          "n": 1,
+          "confiance_moyenne": 0.2699046649914545,
+          "exactitude_empirique": 0.0
+        },
+        {
+          "intervalle": "[0.3, 0.5)",
+          "n": 7,
+          "confiance_moyenne": 0.43021161278969233,
+          "exactitude_empirique": 0.7142857142857143
+        },
+        {
+          "intervalle": "[0.5, 0.7)",
+          "n": 32,
+          "confiance_moyenne": 0.6365615359781864,
+          "exactitude_empirique": 0.8125
+        },
+        {
+          "intervalle": "[0.7, 0.9)",
+          "n": 188,
+          "confiance_moyenne": 0.8287948928604252,
+          "exactitude_empirique": 0.9095744680851063
+        },
+        {
+          "intervalle": "[0.9, 1.0]",
+          "n": 222,
+          "confiance_moyenne": 0.9698590249973134,
+          "exactitude_empirique": 0.9414414414414415
+        }
+      ]
+    },
+    "softmax_regression": {
+      "name": "softmax_regression",
+      "accuracy": 0.9288888888888889,
+      "top3_accuracy": 0.96,
+      "macro_f1": 0.928344751903334,
+      "mrr": 0.9506851851851852,
+      "stability": 0.9848888888888888,
+      "per_class": {
+        "agriculture_elevage": {
+          "precision": 0.8518518518518519,
+          "recall": 1.0,
+          "f1": 0.92,
+          "support": 23
+        },
+        "agroalimentaire": {
+          "precision": 0.9705882352941176,
+          "recall": 0.9705882352941176,
+          "f1": 0.9705882352941176,
+          "support": 34
+        },
+        "chimie_mines": {
+          "precision": 0.9090909090909091,
+          "recall": 0.8333333333333334,
+          "f1": 0.8695652173913043,
+          "support": 24
+        },
+        "commerce_gestion": {
+          "precision": 0.96875,
+          "recall": 0.9117647058823529,
+          "f1": 0.9393939393939394,
+          "support": 34
+        },
+        "data_ia": {
+          "precision": 0.9375,
+          "recall": 0.8571428571428571,
+          "f1": 0.8955223880597014,
+          "support": 35
+        },
+        "droit": {
+          "precision": 0.9354838709677419,
+          "recall": 0.9666666666666667,
+          "f1": 0.9508196721311476,
+          "support": 30
+        },
+        "economie_management": {
+          "precision": 0.896551724137931,
+          "recall": 0.896551724137931,
+          "f1": 0.896551724137931,
+          "support": 29
+        },
+        "finance_comptabilite": {
+          "precision": 0.8648648648648649,
+          "recall": 0.9696969696969697,
+          "f1": 0.9142857142857143,
+          "support": 33
+        },
+        "genie_civil": {
+          "precision": 0.8928571428571429,
+          "recall": 0.8928571428571429,
+          "f1": 0.8928571428571429,
+          "support": 28
+        },
+        "genie_industriel": {
+          "precision": 0.9117647058823529,
+          "recall": 0.96875,
+          "f1": 0.9393939393939394,
+          "support": 32
+        },
+        "hotellerie_restauration": {
+          "precision": 0.9629629629629629,
+          "recall": 0.9629629629629629,
+          "f1": 0.9629629629629629,
+          "support": 27
+        },
+        "informatique_numerique": {
+          "precision": 0.967741935483871,
+          "recall": 0.8571428571428571,
+          "f1": 0.909090909090909,
+          "support": 35
+        },
+        "pharmacie_sante": {
+          "precision": 1.0,
+          "recall": 0.8888888888888888,
+          "f1": 0.9411764705882353,
+          "support": 36
+        },
+        "reseaux_electronique": {
+          "precision": 0.9285714285714286,
+          "recall": 1.0,
+          "f1": 0.962962962962963,
+          "support": 26
+        },
+        "tourisme_environnement": {
+          "precision": 0.9230769230769231,
+          "recall": 1.0,
+          "f1": 0.9600000000000001,
+          "support": 24
+        }
+      },
+      "confusion_matrix": [
+        [
+          23,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          33,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          20,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          31,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          30,
+          0,
+          1,
+          2,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          29,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          26,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          32,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          25,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          31,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          26,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          2,
+          0,
+          0,
+          0,
+          30,
+          0,
+          1,
+          0
+        ],
+        [
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          32,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          26,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          24
+        ]
+      ],
+      "calibration": [
+        {
+          "intervalle": "[0.0, 0.3)",
+          "n": 2,
+          "confiance_moyenne": 0.2658284217945826,
+          "exactitude_empirique": 0.5
+        },
+        {
+          "intervalle": "[0.3, 0.5)",
+          "n": 16,
+          "confiance_moyenne": 0.412717727645152,
+          "exactitude_empirique": 0.8125
+        },
+        {
+          "intervalle": "[0.5, 0.7)",
+          "n": 54,
+          "confiance_moyenne": 0.608964198840089,
+          "exactitude_empirique": 0.8888888888888888
+        },
+        {
+          "intervalle": "[0.7, 0.9)",
+          "n": 242,
+          "confiance_moyenne": 0.8336158369146077,
+          "exactitude_empirique": 0.9380165289256198
+        },
+        {
+          "intervalle": "[0.9, 1.0]",
+          "n": 136,
+          "confiance_moyenne": 0.9312221560003587,
+          "exactitude_empirique": 0.9485294117647058
+        }
+      ]
+    }
+  },
+  "error_examples": [
+    {
+      "matieres_preferees": "Biologie / Santé, Agriculture / Elevage",
+      "centres_interet": "Biologie / Santé, Agriculture / Elevage",
+      "vrai": "pharmacie_sante",
+      "predit": "agriculture_elevage",
+      "label_noise": true
+    },
+    {
+      "matieres_preferees": "Droit / Juridique, Langues étrangères",
+      "centres_interet": "Droit / Juridique, Langues étrangères",
+      "vrai": "commerce_gestion",
+      "predit": "droit",
+      "label_noise": true
+    },
+    {
+      "matieres_preferees": "Mécanique / Industrie, Mines / Géologie, Mines / Géologie, Mécanique / Industrie",
+      "centres_interet": "Chimie, Mines / Géologie, Chimie",
+      "vrai": "agroalimentaire",
+      "predit": "chimie_mines",
+      "label_noise": true
+    },
+    {
+      "matieres_preferees": "Tourisme / Environnement, Langues étrangères",
+      "centres_interet": "Tourisme / Environnement, Langues étrangères",
+      "vrai": "economie_management",
+      "predit": "tourisme_environnement",
+      "label_noise": true
+    },
+    {
+      "matieres_preferees": "Mathématiques, Langues étrangères, Statistiques / Données",
+      "centres_interet": "Mathématiques, Finance / Comptabilité",
+      "vrai": "data_ia",
+      "predit": "finance_comptabilite",
+      "label_noise": true
+    },
+    {
+      "matieres_preferees": "Langues étrangères, Tourisme / Environnement",
+      "centres_interet": "Hôtellerie / Accueil",
+      "vrai": "hotellerie_restauration",
+      "predit": "tourisme_environnement",
+      "label_noise": false
+    },
+    {
+      "matieres_preferees": "Biologie / Santé, Agriculture / Elevage",
+      "centres_interet": "Agriculture / Elevage",
+      "vrai": "pharmacie_sante",
+      "predit": "agriculture_elevage",
+      "label_noise": true
+    },
+    {
+      "matieres_preferees": "Droit / Juridique, Langues étrangères",
+      "centres_interet": "Droit / Juridique",
+      "vrai": "economie_management",
+      "predit": "droit",
+      "label_noise": true
+    }
+  ],
+  "bias_by_serie_bac": {
+    "Autre": 0.9298245614035088,
+    "D": 0.9139072847682119,
+    "C": 0.8888888888888888,
+    "A": 0.890625,
+    "L": 0.9411764705882353,
+    "Technique": 0.9230769230769231,
+    "S": 0.9821428571428571
+  },
+  "survey_generalization": {
+    "n": 6,
+    "top1_dans_candidats_rate": 0.8333333333333334,
+    "top3_dans_candidats_rate": 1.0,
+    "details": [
+      {
+        "respondent_id": "R001",
+        "population": "etudiant_lyceen",
+        "parcours_declare": "Intelligence Artificielle",
+        "domaines_candidats": [
+          "data_ia",
+          "informatique_numerique",
+          "reseaux_electronique"
+        ],
+        "top3_predit": [
+          "data_ia",
+          "reseaux_electronique",
+          "informatique_numerique"
+        ],
+        "filieres_ispm_correspondantes": [
+          "ISAIA",
+          "IGGLIA"
+        ],
+        "top1_dans_candidats": true,
+        "top3_dans_candidats": true
+      },
+      {
+        "respondent_id": "R002",
+        "population": "etudiant_lyceen",
+        "parcours_declare": "Intelligence Artificielle",
+        "domaines_candidats": [
+          "data_ia",
+          "informatique_numerique",
+          "reseaux_electronique"
+        ],
+        "top3_predit": [
+          "data_ia",
+          "genie_industriel",
+          "reseaux_electronique"
+        ],
+        "filieres_ispm_correspondantes": [
+          "ISAIA",
+          "IGGLIA"
+        ],
+        "top1_dans_candidats": true,
+        "top3_dans_candidats": true
+      },
+      {
+        "respondent_id": "R003",
+        "population": "etudiant_lyceen",
+        "parcours_declare": "Informatique / Technologies de l’Information et de la Communication",
+        "domaines_candidats": [
+          "informatique_numerique",
+          "data_ia",
+          "reseaux_electronique"
+        ],
+        "top3_predit": [
+          "informatique_numerique",
+          "data_ia",
+          "reseaux_electronique"
+        ],
+        "filieres_ispm_correspondantes": [
+          "IGGLIA",
+          "IMTICIA"
+        ],
+        "top1_dans_candidats": true,
+        "top3_dans_candidats": true
+      },
+      {
+        "respondent_id": "R004",
+        "population": "etudiant_lyceen",
+        "parcours_declare": "Informatique / Technologies de l’Information et de la Communication",
+        "domaines_candidats": [
+          "informatique_numerique",
+          "data_ia",
+          "reseaux_electronique"
+        ],
+        "top3_predit": [
+          "informatique_numerique",
+          "data_ia",
+          "reseaux_electronique"
+        ],
+        "filieres_ispm_correspondantes": [
+          "IGGLIA",
+          "IMTICIA"
+        ],
+        "top1_dans_candidats": true,
+        "top3_dans_candidats": true
+      },
+      {
+        "respondent_id": "R005",
+        "population": "etudiant_lyceen",
+        "parcours_declare": "Informatique / Technologies de l’Information et de la Communication",
+        "domaines_candidats": [
+          "informatique_numerique",
+          "data_ia",
+          "reseaux_electronique"
+        ],
+        "top3_predit": [
+          "commerce_gestion",
+          "hotellerie_restauration",
+          "informatique_numerique"
+        ],
+        "filieres_ispm_correspondantes": [
+          "CAA"
+        ],
+        "top1_dans_candidats": false,
+        "top3_dans_candidats": true
+      },
+      {
+        "respondent_id": "R006",
+        "population": "etudiant_lyceen",
+        "parcours_declare": "Informatique / Technologies de l’Information et de la Communication",
+        "domaines_candidats": [
+          "informatique_numerique",
+          "data_ia",
+          "reseaux_electronique"
+        ],
+        "top3_predit": [
+          "data_ia",
+          "reseaux_electronique",
+          "informatique_numerique"
+        ],
+        "filieres_ispm_correspondantes": [
+          "ISAIA",
+          "IGGLIA"
+        ],
+        "top1_dans_candidats": true,
+        "top3_dans_candidats": true
+      }
+    ]
+  }
+}
