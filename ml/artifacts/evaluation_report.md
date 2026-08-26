@@ -10,9 +10,9 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 
 | Modèle | Accuracy | Top-3 accuracy | Macro-F1 | MRR | Stabilité |
 |---|---|---|---|---|---|
-| baseline_centroide | 0.918 | 0.958 | 0.917 | 0.944 | 0.984 |
-| knn | 0.913 | 0.949 | 0.913 | 0.936 | 0.983 |
-| softmax_regression | 0.929 | 0.960 | 0.928 | 0.951 | 0.985 |
+| baseline_centroide | 0.918 | 0.962 | 0.917 | 0.944 | 0.985 |
+| knn | 0.913 | 0.953 | 0.913 | 0.937 | 0.986 |
+| softmax_regression | 0.929 | 0.958 | 0.929 | 0.950 | 0.984 |
 
 `baseline_centroide` est le modèle de référence simple exigé par le brief (section 7). `stabilité` = fraction des profils dont le top-1 ne change pas sous une petite perturbation gaussienne du vecteur de traits (voir `ml.metrics.stability_score`).
 
@@ -26,9 +26,9 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 | agroalimentaire — Agroalimentaire | 0.97 | 0.97 | 0.97 | 34 |
 | chimie_mines — Chimie, Mines & Industries Pétrolières | 0.91 | 0.83 | 0.87 | 24 |
 | commerce_gestion — Commerce, Marketing & Gestion des Affaires | 0.97 | 0.91 | 0.94 | 34 |
-| data_ia — Data Science, Statistique & Intelligence Artificielle | 0.94 | 0.86 | 0.90 | 35 |
+| data_ia — Data Science, Statistique & Intelligence Artificielle | 0.91 | 0.86 | 0.88 | 35 |
 | droit — Droit & Techniques Juridiques | 0.94 | 0.97 | 0.95 | 30 |
-| economie_management — Économie & Management de Projet | 0.90 | 0.90 | 0.90 | 29 |
+| economie_management — Économie & Management de Projet | 0.93 | 0.90 | 0.91 | 29 |
 | finance_comptabilite — Finance & Comptabilité | 0.86 | 0.97 | 0.91 | 33 |
 | genie_civil — Génie Civil & Architecture | 0.89 | 0.89 | 0.89 | 28 |
 | genie_industriel — Génie Industriel, Mécanique & Électrotechnique | 0.91 | 0.97 | 0.94 | 32 |
@@ -42,11 +42,11 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 
 | Intervalle de confiance | n | Confiance moyenne | Exactitude empirique |
 |---|---|---|---|
-| [0.0, 0.3) | 2 | 0.27 | 0.50 |
-| [0.3, 0.5) | 16 | 0.41 | 0.81 |
-| [0.5, 0.7) | 54 | 0.61 | 0.89 |
-| [0.7, 0.9) | 242 | 0.83 | 0.94 |
-| [0.9, 1.0] | 136 | 0.93 | 0.95 |
+| [0.0, 0.3) | 3 | 0.27 | 0.67 |
+| [0.3, 0.5) | 16 | 0.42 | 0.75 |
+| [0.5, 0.7) | 51 | 0.60 | 0.90 |
+| [0.7, 0.9) | 257 | 0.84 | 0.94 |
+| [0.9, 1.0] | 123 | 0.93 | 0.94 |
 
 ### Matrice de confusion (lignes = vrai, colonnes = prédit)
 
@@ -63,7 +63,7 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 | **genie_civil** | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 25 | 1 | 0 | 0 | 0 | 0 | 0 |
 | **genie_industriel** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 31 | 0 | 0 | 0 | 0 | 0 |
 | **hotellerie_restauration** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 26 | 0 | 0 | 0 | 1 |
-| **informatique_numerique** | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 2 | 0 | 0 | 0 | 30 | 0 | 1 | 0 |
+| **informatique_numerique** | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 2 | 0 | 0 | 0 | 30 | 0 | 1 | 0 |
 | **pharmacie_sante** | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 32 | 0 | 0 |
 | **reseaux_electronique** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 26 | 0 |
 | **tourisme_environnement** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 24 |
@@ -105,8 +105,8 @@ Aucun attribut démographique (genre, âge, origine) n'est utilisé par le modè
 |---|---|---|---|---|---|---|---|
 | R001 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | data_ia, reseaux_electronique, informatique_numerique | ISAIA, IGGLIA | ✅ | ✅ |
 | R002 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | data_ia, genie_industriel, reseaux_electronique | ISAIA, IGGLIA | ✅ | ✅ |
-| R003 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, data_ia, reseaux_electronique | IGGLIA, IMTICIA | ✅ | ✅ |
-| R004 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, data_ia, reseaux_electronique | IGGLIA, IMTICIA | ✅ | ✅ |
+| R003 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, reseaux_electronique, data_ia | IGGLIA, IMTICIA | ✅ | ✅ |
+| R004 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, reseaux_electronique, data_ia | IGGLIA, IMTICIA | ✅ | ✅ |
 | R005 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | commerce_gestion, hotellerie_restauration, informatique_numerique | CAA | ❌ | ✅ |
 | R006 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | data_ia, reseaux_electronique, informatique_numerique | ISAIA, IGGLIA | ✅ | ✅ |
 

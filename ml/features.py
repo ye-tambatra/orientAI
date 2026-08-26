@@ -20,6 +20,8 @@ a consistent feature space.
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 
 from ml.vocab import ENVIRONNEMENTS, SERIES_BAC, TAG_IDS, normalize_free_text, strip_accents
@@ -55,17 +57,33 @@ _ENVIRONNEMENT_SYNONYMS: dict[str, str] = {
     "exterieur": "terrain",
     "teletravail": "bureau",
     "domicile": "bureau",
+    "clientele": "contact_client",
+    "accueil": "contact_client",
+    "usine": "atelier",
 }
+
+
+def _tokenize(text: str) -> set[str]:
+    """Word tokens, accent- and case-normalised."""
+    return set(re.findall(r"[a-z0-9]+", strip_accents(text).lower()))
 
 
 def _match_categorical(value: str, options: tuple[str, ...],
                         synonyms: dict[str, str] | None = None) -> str | None:
+    """Matches `value` against one of `options` by exact WORD token, not raw
+    substring — e.g. a plain substring check would wrongly match the
+    single-letter option "S" inside "Série D" (the word "Série" itself
+    contains an "s"). Falls back to `synonyms` (checked as substrings,
+    since those are meant to be short free-form phrases like "plein air").
+    """
     if not value:
         return None
-    norm_value = strip_accents(value).lower()
+    value_tokens = _tokenize(value)
     for opt in options:
-        if strip_accents(opt).lower() in norm_value:
+        opt_tokens = _tokenize(opt)
+        if opt_tokens and opt_tokens.issubset(value_tokens):
             return opt
+    norm_value = f" {strip_accents(value).lower()} "
     for synonym, opt in (synonyms or {}).items():
         if synonym in norm_value:
             return opt

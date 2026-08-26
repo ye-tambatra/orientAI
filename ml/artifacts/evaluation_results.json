@@ -6,10 +6,10 @@
     "baseline_centroide": {
       "name": "baseline_centroide",
       "accuracy": 0.9177777777777778,
-      "top3_accuracy": 0.9577777777777777,
+      "top3_accuracy": 0.9622222222222222,
       "macro_f1": 0.9169640372373025,
-      "mrr": 0.9439559082892417,
-      "stability": 0.984,
+      "mrr": 0.9444744268077602,
+      "stability": 0.984888888888889,
       "per_class": {
         "agriculture_elevage": {
           "precision": 0.8214285714285714,
@@ -362,43 +362,43 @@
       "calibration": [
         {
           "intervalle": "[0.0, 0.3)",
-          "n": 4,
-          "confiance_moyenne": 0.29087597131729126,
-          "exactitude_empirique": 0.75
+          "n": 3,
+          "confiance_moyenne": 0.29291385412216187,
+          "exactitude_empirique": 1.0
         },
         {
           "intervalle": "[0.3, 0.5)",
-          "n": 39,
-          "confiance_moyenne": 0.44297370314598083,
-          "exactitude_empirique": 0.7692307692307693
+          "n": 40,
+          "confiance_moyenne": 0.4410162568092346,
+          "exactitude_empirique": 0.75
         },
         {
           "intervalle": "[0.5, 0.7)",
           "n": 135,
-          "confiance_moyenne": 0.6035224795341492,
+          "confiance_moyenne": 0.6081988215446472,
           "exactitude_empirique": 0.9333333333333333
         },
         {
           "intervalle": "[0.7, 0.9)",
-          "n": 238,
-          "confiance_moyenne": 0.827222466468811,
-          "exactitude_empirique": 0.9243697478991597
+          "n": 229,
+          "confiance_moyenne": 0.8273773789405823,
+          "exactitude_empirique": 0.925764192139738
         },
         {
           "intervalle": "[0.9, 1.0]",
-          "n": 34,
-          "confiance_moyenne": 0.9183893203735352,
-          "exactitude_empirique": 1.0
+          "n": 43,
+          "confiance_moyenne": 0.9149393439292908,
+          "exactitude_empirique": 0.9767441860465116
         }
       ]
     },
     "knn": {
       "name": "knn",
       "accuracy": 0.9133333333333333,
-      "top3_accuracy": 0.9488888888888889,
+      "top3_accuracy": 0.9533333333333334,
       "macro_f1": 0.9128875617749006,
-      "mrr": 0.9364730023063357,
-      "stability": 0.983111111111111,
+      "mrr": 0.9370285578618912,
+      "stability": 0.9857777777777779,
       "per_class": {
         "agriculture_elevage": {
           "precision": 0.8214285714285714,
@@ -757,37 +757,37 @@
         },
         {
           "intervalle": "[0.3, 0.5)",
-          "n": 7,
-          "confiance_moyenne": 0.43021161278969233,
-          "exactitude_empirique": 0.7142857142857143
+          "n": 6,
+          "confiance_moyenne": 0.41970194904426106,
+          "exactitude_empirique": 0.6666666666666666
         },
         {
           "intervalle": "[0.5, 0.7)",
-          "n": 32,
-          "confiance_moyenne": 0.6365615359781864,
-          "exactitude_empirique": 0.8125
+          "n": 34,
+          "confiance_moyenne": 0.6339751302899321,
+          "exactitude_empirique": 0.7941176470588235
         },
         {
           "intervalle": "[0.7, 0.9)",
-          "n": 188,
-          "confiance_moyenne": 0.8287948928604252,
-          "exactitude_empirique": 0.9095744680851063
+          "n": 187,
+          "confiance_moyenne": 0.8291202052569973,
+          "exactitude_empirique": 0.9090909090909091
         },
         {
           "intervalle": "[0.9, 1.0]",
           "n": 222,
-          "confiance_moyenne": 0.9698590249973134,
-          "exactitude_empirique": 0.9414414414414415
+          "confiance_moyenne": 0.9686919053043411,
+          "exactitude_empirique": 0.9459459459459459
         }
       ]
     },
     "softmax_regression": {
       "name": "softmax_regression",
       "accuracy": 0.9288888888888889,
-      "top3_accuracy": 0.96,
-      "macro_f1": 0.928344751903334,
-      "mrr": 0.9506851851851852,
-      "stability": 0.9848888888888888,
+      "top3_accuracy": 0.9577777777777777,
+      "macro_f1": 0.9285153872855489,
+      "mrr": 0.9502777777777778,
+      "stability": 0.9844444444444445,
       "per_class": {
         "agriculture_elevage": {
           "precision": 0.8518518518518519,
@@ -814,9 +814,9 @@
           "support": 34
         },
         "data_ia": {
-          "precision": 0.9375,
+          "precision": 0.9090909090909091,
           "recall": 0.8571428571428571,
-          "f1": 0.8955223880597014,
+          "f1": 0.8823529411764706,
           "support": 35
         },
         "droit": {
@@ -826,9 +826,9 @@
           "support": 30
         },
         "economie_management": {
-          "precision": 0.896551724137931,
+          "precision": 0.9285714285714286,
           "recall": 0.896551724137931,
-          "f1": 0.896551724137931,
+          "f1": 0.912280701754386,
           "support": 29
         },
         "finance_comptabilite": {
@@ -1073,9 +1073,9 @@
           0,
           0,
           0,
-          1,
+          2,
           0,
-          1,
+          0,
           2,
           0,
           0,
@@ -1140,33 +1140,33 @@
       "calibration": [
         {
           "intervalle": "[0.0, 0.3)",
-          "n": 2,
-          "confiance_moyenne": 0.2658284217945826,
-          "exactitude_empirique": 0.5
+          "n": 3,
+          "confiance_moyenne": 0.2676447562409786,
+          "exactitude_empirique": 0.6666666666666666
         },
         {
           "intervalle": "[0.3, 0.5)",
           "n": 16,
-          "confiance_moyenne": 0.412717727645152,
-          "exactitude_empirique": 0.8125
+          "confiance_moyenne": 0.4181727259942656,
+          "exactitude_empirique": 0.75
         },
         {
           "intervalle": "[0.5, 0.7)",
-          "n": 54,
-          "confiance_moyenne": 0.608964198840089,
-          "exactitude_empirique": 0.8888888888888888
+          "n": 51,
+          "confiance_moyenne": 0.6049230184187138,
+          "exactitude_empirique": 0.9019607843137255
         },
         {
           "intervalle": "[0.7, 0.9)",
-          "n": 242,
-          "confiance_moyenne": 0.8336158369146077,
-          "exactitude_empirique": 0.9380165289256198
+          "n": 257,
+          "confiance_moyenne": 0.8377848615051332,
+          "exactitude_empirique": 0.9416342412451362
         },
         {
           "intervalle": "[0.9, 1.0]",
-          "n": 136,
-          "confiance_moyenne": 0.9312221560003587,
-          "exactitude_empirique": 0.9485294117647058
+          "n": 123,
+          "confiance_moyenne": 0.9335797105069319,
+          "exactitude_empirique": 0.943089430894309
         }
       ]
     }
@@ -1296,8 +1296,8 @@
         ],
         "top3_predit": [
           "informatique_numerique",
-          "data_ia",
-          "reseaux_electronique"
+          "reseaux_electronique",
+          "data_ia"
         ],
         "filieres_ispm_correspondantes": [
           "IGGLIA",
@@ -1317,8 +1317,8 @@
         ],
         "top3_predit": [
           "informatique_numerique",
-          "data_ia",
-          "reseaux_electronique"
+          "reseaux_electronique",
+          "data_ia"
         ],
         "filieres_ispm_correspondantes": [
           "IGGLIA",

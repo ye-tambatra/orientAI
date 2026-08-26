@@ -149,7 +149,7 @@ def analyser_profil_ml(
     matiere_preferee: str = "",
     environnement_prefere: str = "",
     motivation_principale: str = "",
-    competences: list[str] | None = None,
+    competence_principale: str = "",
     serie_bac: str = "",
 ) -> str:
     """Classe un profil candidat parmi les domaines généraux d'orientation
@@ -158,12 +158,20 @@ def analyser_profil_ml(
 
     CRITIQUE : N'appelle JAMAIS ce tool directement si tu n'as pas d'abord
     collecté au moins la matière préférée, l'environnement de travail
-    préféré ET la motivation principale. S'il te manque ne serait-ce qu'une
-    de ces 3 informations, tu DOIS d'abord appeler le tool
+    préféré ET la motivation principale (idéalement aussi la série de bac
+    et une compétence). S'il te manque ne serait-ce qu'une de ces
+    informations, tu DOIS d'abord appeler le tool
     `demarrer_questionnaire_orientation` pour la/les demander via
     l'interface. N'appelle ce tool qu'après que l'utilisateur ait soumis le
     questionnaire ou s'il a déjà fourni explicitement ces informations dans
     son message.
+
+    Ces 5 champs correspondent exactement aux variables utilisées pour
+    entraîner le modèle (voir ml/features.py) : matière/motivation/
+    compétence sont converties en signaux de domaine, l'environnement et
+    la série de bac sont des dimensions à part entière du vecteur de
+    features. Ne saute pas la série de bac et la compétence par facilité :
+    le modèle les utilise réellement et elles affinent nettement le score.
 
     Le modèle raisonne au niveau du DOMAINE d'orientation, pas directement
     au niveau d'une filière ISPM précise (un profil "j'aime l'IA et la
@@ -181,11 +189,14 @@ def analyser_profil_ml(
         matiere_preferee: La matière préférée au lycée (ex: Mathématiques,
             Physique-Chimie, SVT, Français).
         environnement_prefere: L'environnement de travail préféré (ex:
-            Bureau, Plein air, Laboratoire, Télétravail).
+            Bureau, Atelier/Terrain, Laboratoire, Contact clientèle,
+            Télétravail).
         motivation_principale: Ce qui motive le plus l'utilisateur (ex: La
             technologie, Aider les autres, L'art et la création, Les
             affaires) — traité comme un centre d'intérêt.
-        competences: Les compétences déclarées par l'utilisateur, si connues.
+        competence_principale: La compétence que l'utilisateur déclare
+            comme la sienne (ex: Programmation, Analyse de données,
+            Communication, Gestion de projet). Laisser vide si non précisé.
         serie_bac: La série de bac de l'utilisateur si connue (ex: S, D, C,
             A, L, Technique). Laisser vide si non précisé.
     """
@@ -196,7 +207,7 @@ def analyser_profil_ml(
 
     profile = {
         "matieres_preferees": [matiere_preferee] if matiere_preferee else [],
-        "competences": competences or [],
+        "competences": [competence_principale] if competence_principale else [],
         "centres_interet": [motivation_principale] if motivation_principale else [],
         "environnement_travail": environnement_prefere,
         "serie_bac": serie_bac,
@@ -231,21 +242,26 @@ def analyser_profil_ml(
 def demarrer_questionnaire_orientation(
     matiere_preferee: str = "",
     environnement_prefere: str = "",
-    motivation_principale: str = ""
+    motivation_principale: str = "",
+    competence_principale: str = "",
+    serie_bac: str = "",
 ) -> str:
     """Déclenche l'affichage d'un questionnaire interactif sur l'interface utilisateur pour recueillir ses préférences.
-    
-    Utilise OBLIGATOIREMENT ceci quand l'utilisateur demande une recommandation de filière ou d'orientation et qu'il manque au moins une des 3 informations (matière, environnement, motivation).
-    Si l'utilisateur a déjà mentionné certaines de ses préférences dans son message, 
+
+    Utilise OBLIGATOIREMENT ceci quand l'utilisateur demande une recommandation de filière ou d'orientation et qu'il manque au moins une des 5 informations (matière, environnement, motivation, compétence, série de bac).
+    Ces 5 champs correspondent exactement aux variables du modèle ML (voir analyser_profil_ml) : ne raccourcis pas le questionnaire à 3 questions, la série de bac et la compétence comptent réellement dans le score.
+    Si l'utilisateur a déjà mentionné certaines de ses préférences dans son message,
     remplis les arguments correspondants pour que le questionnaire saute ces questions.
-    
+
     Args:
         matiere_preferee: La matière préférée au lycée si l'utilisateur l'a mentionnée (ex: Mathématiques, Physique-Chimie, SVT, Français).
-        environnement_prefere: L'environnement de travail préféré (ex: Bureau, Plein air, Laboratoire, Télétravail).
+        environnement_prefere: L'environnement de travail préféré (ex: Bureau, Atelier/Terrain, Laboratoire, Contact clientèle, Télétravail).
         motivation_principale: Ce qui motive le plus l'utilisateur (ex: La technologie, Aider les autres, L'art et la création, Les affaires).
+        competence_principale: La compétence que l'utilisateur reconnaît comme la sienne (ex: Programmation, Analyse de données, Communication, Gestion de projet).
+        serie_bac: La série de bac (choisie ou envisagée) si l'utilisateur l'a mentionnée (ex: S, D, C, A, L, Technique).
     """
     import json
-    
+
     questions = []
     if not matiere_preferee:
         questions.append({
@@ -257,7 +273,7 @@ def demarrer_questionnaire_orientation(
         questions.append({
             "id": "environnement_prefere",
             "label": "Quel type d'environnement de travail préférez-vous ?",
-            "options": ["Bureau", "Plein air", "Laboratoire", "Télétravail"]
+            "options": ["Bureau", "Atelier / Terrain", "Laboratoire", "Contact clientèle", "Télétravail"]
         })
     if not motivation_principale:
         questions.append({
@@ -265,19 +281,35 @@ def demarrer_questionnaire_orientation(
             "label": "Qu'est-ce qui vous motive le plus ?",
             "options": ["La technologie", "Aider les autres", "L'art et la création", "Les affaires"]
         })
+    if not competence_principale:
+        questions.append({
+            "id": "competence_principale",
+            "label": "Quelle compétence vous reconnaissez-vous le plus ?",
+            "options": ["Programmation", "Analyse de données", "Communication", "Gestion de projet", "Créativité"]
+        })
+    if not serie_bac:
+        questions.append({
+            "id": "serie_bac",
+            "label": "Quelle série de bac avez-vous choisie (ou envisagez-vous) ?",
+            "options": ["S", "D", "C", "A", "L", "Technique"]
+        })
 
     return json.dumps({
         "action": "open_survey",
         "prefilled": {
             "matiere_preferee": matiere_preferee,
             "environnement_prefere": environnement_prefere,
-            "motivation_principale": motivation_principale
+            "motivation_principale": motivation_principale,
+            "competence_principale": competence_principale,
+            "serie_bac": serie_bac,
         },
         "questions": questions,
         "labels": {
             "matiere_preferee": "Matière préférée",
             "environnement_prefere": "Environnement de travail",
-            "motivation_principale": "Motivation principale"
+            "motivation_principale": "Motivation principale",
+            "competence_principale": "Compétence principale",
+            "serie_bac": "Série de bac",
         }
     })
 
