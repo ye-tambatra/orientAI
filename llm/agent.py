@@ -85,12 +85,25 @@ class ConversationSession:
                 function_response = getattr(part, "function_response", None)
                 if function_response is not None and pending_call is not None:
                     result = (function_response.response or {}).get("result")
+                    step_result = result if isinstance(result, str) else str(result)
+                    if pending_call["tool"] in RAG_TOOL_NAMES and isinstance(result, str):
+                        from pathlib import Path
+                        sources_list = parse_sources(result)
+                        if sources_list:
+                            lines = []
+                            for s in sources_list:
+                                display_name = s.get("url") or Path(s["file"]).name
+                                lines.append(f"- ID: {s['source_id']}, Source: {display_name}")
+                            step_result = "Sources trouvées :\n" + "\n".join(lines)
+                        else:
+                            step_result = "Aucune source trouvée."
+
                     steps.append(
                         {
                             "id": str(uuid.uuid4()),
                             "tool": pending_call["tool"],
                             "args": pending_call["args"],
-                            "result": result if isinstance(result, str) else str(result),
+                            "result": step_result,
                         }
                     )
                     pending_call = None

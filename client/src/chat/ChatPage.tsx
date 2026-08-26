@@ -14,6 +14,7 @@ import PersonIcon from '@mui/icons-material/Person'
 import { useChatSession } from './useChatSession'
 import StepsAccordion from './StepsAccordion'
 import SourcesList from './SourcesList'
+import ReactMarkdown from 'react-markdown'
 
 export default function ChatPage() {
   const { messages, isSending, error, sendMessage } = useChatSession()
@@ -82,9 +83,17 @@ export default function ChatPage() {
                   color: message.role === 'user' ? 'primary.contrastText' : 'text.primary',
                 }}
               >
-                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                  {message.content}
-                </Typography>
+                <Box
+                  sx={{
+                    whiteSpace: 'normal',
+                    '& p': { m: 0, '&:not(:last-child)': { mb: 1 } },
+                    '& a': { color: 'inherit', textDecoration: 'underline' },
+                  }}
+                >
+                  <ReactMarkdown>
+                    {message.content}
+                  </ReactMarkdown>
+                </Box>
               </Paper>
               {message.role === 'user' && (
                 <Avatar sx={{ bgcolor: 'grey.500', width: 32, height: 32 }}>

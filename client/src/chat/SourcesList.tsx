@@ -19,7 +19,7 @@ export default function SourcesList({ sources }: SourcesListProps) {
         Sources :
       </Typography>
       {sources.map((source) => (
-        <Tooltip key={source.source_id} title={source.file} placement="top" arrow>
+        <Tooltip key={source.source_id} title={source.file.split('/').pop()} placement="top" arrow>
           <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
             <InsertDriveFileOutlinedIcon sx={{ fontSize: 14 }} color="disabled" />
             {source.url ? (
