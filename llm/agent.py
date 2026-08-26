@@ -12,9 +12,9 @@ from llm.client import client, GEMINI_MODEL
 from llm.tools import TOOLS
 
 SYSTEM_INSTRUCTION = (
-    "You are OrientAI's assistant, helping students with school orientation "
-    "and admission questions. Be concise and helpful. If you don't know an "
-    "answer, say so instead of guessing."
+    "Tu es l'assistant d'OrientAI, tu aides les étudiants avec leurs "
+    "questions d'orientation scolaire et d'admission. Sois concis et utile. "
+    "Si tu ne connais pas la réponse, dis-le plutôt que d'inventer."
 )
 
 
