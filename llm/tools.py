@@ -268,6 +268,11 @@ _SERIE_BAC_LABELS = {
     "etudiant": "Quelle série de bac avez-vous obtenue ?",
     "professionnel": "Quelle série de bac aviez-vous obtenue ?",
 }
+_ENVIRONNEMENT_LABELS = {
+    "lyceen": "Plus tard, dans quel type d'environnement aimerais-tu travailler ?",
+    "etudiant": "Dans quel type d'environnement aimeriez-vous travailler ?",
+    "professionnel": "Quel type d'environnement de travail préférez-vous ?",
+}
 _COMPETENCE_LABELS = {
     "lyceen": "Quelle compétence penses-tu développer le plus facilement ?",
     "etudiant": "Quelle compétence avez-vous le plus développée jusqu'ici ?",
@@ -328,7 +333,7 @@ def demarrer_questionnaire_orientation(
     if not environnement_prefere:
         questions.append({
             "id": "environnement_prefere",
-            "label": "Quel type d'environnement de travail préférez-vous ?",
+            "label": _ENVIRONNEMENT_LABELS[statut],
             "options": list(_ENVIRONNEMENT_OPTION_LABELS.values())
         })
     if not motivation_principale:
