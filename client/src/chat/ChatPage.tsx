@@ -48,11 +48,14 @@ export default function ChatPage() {
         mx: 'auto',
       }}
     >
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6">OrientAI</Typography>
-        <Typography variant="body2" color="text.secondary">
-          Assistant d'orientation scolaire
-        </Typography>
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+        <img src="/ispm_logo.jpeg" alt="ISPM Logo" style={{ height: 48, width: 'auto', borderRadius: 4 }} />
+        <Box>
+          <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>OrientAI</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Assistant d'orientation scolaire de l'ISPM
+          </Typography>
+        </Box>
       </Box>
 
       <Stack spacing={2} sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
