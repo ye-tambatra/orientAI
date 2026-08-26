@@ -82,11 +82,14 @@ export default function ChatPage() {
         mx: 'auto',
       }}
     >
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6">OrientAI</Typography>
-        <Typography variant="body2" color="text.secondary">
-          Assistant d'orientation scolaire
-        </Typography>
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+        <img src="/ispm_logo.jpeg" alt="ISPM Logo" style={{ height: 48, width: 'auto', borderRadius: 4 }} />
+        <Box>
+          <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>Orient'AI</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Assistant d'orientation scolaire de l'ISPM
+          </Typography>
+        </Box>
       </Box>
 
       <Stack spacing={2} sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
@@ -234,6 +237,26 @@ export default function ChatPage() {
       </Stack>
 
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+        {messages.length === 0 && (
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+            {[
+              "Quelles sont les filières proposées ?",
+              "Quelles sont les conditions d'admission ?",
+              "Suggère-moi une branche d'étude à suivre"
+            ].map((prompt, index) => (
+              <Button
+                key={index}
+                variant="outlined"
+                color="primary"
+                size="small"
+                sx={{ borderRadius: 4, textTransform: 'none' }}
+                onClick={() => sendMessage(prompt)}
+              >
+                {prompt}
+              </Button>
+            ))}
+          </Box>
+        )}
         <Stack direction="row" spacing={1}>
           <TextField
             fullWidth
