@@ -146,15 +146,24 @@ def _profil_ml_indisponible(detail: str) -> str:
 
 
 def analyser_profil_ml(
-    matieres_preferees: list[str] | None = None,
+    matiere_preferee: str = "",
+    environnement_prefere: str = "",
+    motivation_principale: str = "",
     competences: list[str] | None = None,
-    centres_interet: list[str] | None = None,
     serie_bac: str = "",
-    environnement_travail: str = "",
 ) -> str:
     """Classe un profil candidat parmi les domaines généraux d'orientation
     pédagogique (Informatique, Data/IA, Commerce, Droit, Santé...) à l'aide
     du modèle de Machine Learning entraîné (régression softmax, ml/train.py).
+
+    CRITIQUE : N'appelle JAMAIS ce tool directement si tu n'as pas d'abord
+    collecté au moins la matière préférée, l'environnement de travail
+    préféré ET la motivation principale. S'il te manque ne serait-ce qu'une
+    de ces 3 informations, tu DOIS d'abord appeler le tool
+    `demarrer_questionnaire_orientation` pour la/les demander via
+    l'interface. N'appelle ce tool qu'après que l'utilisateur ait soumis le
+    questionnaire ou s'il a déjà fourni explicitement ces informations dans
+    son message.
 
     Le modèle raisonne au niveau du DOMAINE d'orientation, pas directement
     au niveau d'une filière ISPM précise (un profil "j'aime l'IA et la
@@ -163,30 +172,22 @@ def analyser_profil_ml(
     Le résultat inclut donc, pour chaque domaine, les filières ISPM
     correspondantes à titre indicatif (table de correspondance fixe, PAS
     une prédiction du modèle) : vérifie leurs détails via les outils
-    documentaires avant de recommander l'une d'elles précisément.
-
-    Utilise ceci dès que tu as recueilli au moins un élément de profil
-    (matières préférées, compétences ou centres d'intérêt) et que
-    l'utilisateur souhaite une recommandation d'orientation. Le résultat
-    est une sortie STATISTIQUE du modèle : présente-la comme telle,
-    distincte des informations documentaires (RAG) et de tes propres
-    explications. Combine-la ensuite avec les outils documentaires
-    (rechercher_formation, verifier_prerequis, identifier_debouches...)
-    pour justifier et sourcer la recommandation finale — ne présente
-    jamais le score seul comme une décision d'admission.
+    documentaires avant de recommander l'une d'elles précisément. Le
+    résultat est une sortie STATISTIQUE du modèle : présente-la comme
+    telle, distincte des informations documentaires (RAG) et de tes
+    propres explications.
 
     Args:
-        matieres_preferees: Les matières que l'utilisateur préfère.
-        competences: Les compétences déclarées par l'utilisateur.
-        centres_interet: Les centres d'intérêt déclarés par l'utilisateur.
+        matiere_preferee: La matière préférée au lycée (ex: Mathématiques,
+            Physique-Chimie, SVT, Français).
+        environnement_prefere: L'environnement de travail préféré (ex:
+            Bureau, Plein air, Laboratoire, Télétravail).
+        motivation_principale: Ce qui motive le plus l'utilisateur (ex: La
+            technologie, Aider les autres, L'art et la création, Les
+            affaires) — traité comme un centre d'intérêt.
+        competences: Les compétences déclarées par l'utilisateur, si connues.
         serie_bac: La série de bac de l'utilisateur si connue (ex: S, D, C,
-            A, L, Technique). Signal utile — un lycéen en filière littéraire
-            (L) n'a par exemple statistiquement pas le même profil qu'un
-            candidat en série scientifique. Laisser vide si non précisé, et
-            demander l'info à l'utilisateur si elle n'a pas encore été donnée.
-        environnement_travail: Le type d'environnement de travail recherché
-            si connu (ex: bureau, atelier, laboratoire, terrain,
-            contact_client). Laisser vide si non précisé.
+            A, L, Technique). Laisser vide si non précisé.
     """
     try:
         model = get_model()
@@ -194,19 +195,19 @@ def analyser_profil_ml(
         return _profil_ml_indisponible(str(e))
 
     profile = {
-        "matieres_preferees": matieres_preferees or [],
+        "matieres_preferees": [matiere_preferee] if matiere_preferee else [],
         "competences": competences or [],
-        "centres_interet": centres_interet or [],
+        "centres_interet": [motivation_principale] if motivation_principale else [],
+        "environnement_travail": environnement_prefere,
         "serie_bac": serie_bac,
-        "environnement_travail": environnement_travail,
     }
     ranking = model.rank_domaines(profile, k=3)
     if not ranking:
         return (
             "[Résultat du modèle ML] Aucune information exploitable dans le "
-            "profil fourni : pose des questions pour recueillir des "
-            "matières, compétences ou centres d'intérêt avant de "
-            "recommander une orientation."
+            "profil fourni : appelle demarrer_questionnaire_orientation pour "
+            "recueillir la matière préférée, l'environnement de travail et "
+            "la motivation principale avant de recommander une orientation."
         )
     lines = [
         f"{i + 1}. {r['label']} (score du modèle : {r['score']:.2f}) — "
@@ -225,6 +226,71 @@ def analyser_profil_ml(
         "sortie du modèle : vérifie leurs prérequis et débouchés réels via "
         "les outils documentaires avant de conclure."
     )
+
+
+def demarrer_questionnaire_orientation(
+    matiere_preferee: str = "",
+    environnement_prefere: str = "",
+    motivation_principale: str = ""
+) -> str:
+    """Déclenche l'affichage d'un questionnaire interactif sur l'interface utilisateur pour recueillir ses préférences.
+    
+    Utilise OBLIGATOIREMENT ceci quand l'utilisateur demande une recommandation de filière ou d'orientation et qu'il manque au moins une des 3 informations (matière, environnement, motivation).
+    Si l'utilisateur a déjà mentionné certaines de ses préférences dans son message, 
+    remplis les arguments correspondants pour que le questionnaire saute ces questions.
+    
+    Args:
+        matiere_preferee: La matière préférée au lycée si l'utilisateur l'a mentionnée (ex: Mathématiques, Physique-Chimie, SVT, Français).
+        environnement_prefere: L'environnement de travail préféré (ex: Bureau, Plein air, Laboratoire, Télétravail).
+        motivation_principale: Ce qui motive le plus l'utilisateur (ex: La technologie, Aider les autres, L'art et la création, Les affaires).
+    """
+    import json
+    
+    questions = []
+    if not matiere_preferee:
+        questions.append({
+            "id": "matiere_preferee",
+            "label": "Quelle est votre matière préférée au lycée ?",
+            "options": ["Mathématiques", "Physique-Chimie", "SVT", "Français", "Anglais"]
+        })
+    if not environnement_prefere:
+        questions.append({
+            "id": "environnement_prefere",
+            "label": "Quel type d'environnement de travail préférez-vous ?",
+            "options": ["Bureau", "Plein air", "Laboratoire", "Télétravail"]
+        })
+    if not motivation_principale:
+        questions.append({
+            "id": "motivation_principale",
+            "label": "Qu'est-ce qui vous motive le plus ?",
+            "options": ["La technologie", "Aider les autres", "L'art et la création", "Les affaires"]
+        })
+
+    return json.dumps({
+        "action": "open_survey",
+        "prefilled": {
+            "matiere_preferee": matiere_preferee,
+            "environnement_prefere": environnement_prefere,
+            "motivation_principale": motivation_principale
+        },
+        "questions": questions,
+        "labels": {
+            "matiere_preferee": "Matière préférée",
+            "environnement_prefere": "Environnement de travail",
+            "motivation_principale": "Motivation principale"
+        }
+    })
+
+
+def obtenir_informations_ispm() -> str:
+    """Récupère les informations générales, les contacts et l'adresse de l'ISPM.
+
+    Utilise ceci quand l'utilisateur demande où se trouve l'ISPM, comment
+    les contacter (téléphone, email), ou des informations générales sur
+    l'institut (historique court, localisation).
+    """
+    query = "Informations générales sur l'ISPM, contact, adresse, téléphone, email"
+    return retrieve_context(query, n_results=4)
 
 
 def calculer_score_adequation(
@@ -403,4 +469,6 @@ TOOLS = [
     identifier_points_forts,
     expliquer_recommandation_ml,
     expliquer_recommandation,
+    obtenir_informations_ispm,
+    demarrer_questionnaire_orientation,
 ]

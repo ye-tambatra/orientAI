@@ -48,6 +48,7 @@ export default function StepsAccordion({ steps }: StepsAccordionProps) {
                   fontFamily: 'monospace',
                   color: 'text.secondary',
                   whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all'
                 }}
               >
                 args: {JSON.stringify(step.args)}
@@ -55,7 +56,11 @@ export default function StepsAccordion({ steps }: StepsAccordionProps) {
               <Typography
                 variant="caption"
                 component="p"
-                sx={{ m: 0, color: 'text.secondary' }}
+                sx={{ 
+                  m: 0, 
+                  color: 'text.secondary',
+                  wordBreak: 'break-word' 
+                }}
               >
                 {step.result}
               </Typography>
