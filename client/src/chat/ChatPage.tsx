@@ -60,9 +60,26 @@ export default function ChatPage() {
 
       <Stack spacing={2} sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
         {messages.length === 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ m: 'auto' }}>
-            Posez une question sur les filières, les conditions d'admission...
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              textAlign: 'center',
+              gap: 2,
+              px: 2,
+            }}
+          >
+            <SmartToyIcon sx={{ fontSize: 64, color: 'primary.main', opacity: 0.5 }} />
+            <Typography variant="h6" color="text.primary" sx={{ fontWeight: 500 }}>
+              Comment puis-je vous aider ?
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
+              Posez vos questions sur les filières, les conditions d'admission, les tarifs ou la vie étudiante à l'ISPM.
+            </Typography>
+          </Box>
         )}
 
         {messages.map((message) => {
