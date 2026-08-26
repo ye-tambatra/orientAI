@@ -6,9 +6,12 @@ ConversationManager keeps one ConversationSession per session_id in memory,
 so callers can drive multiple independent conversations by session_id.
 """
 
+import uuid
+
 from google.genai import types
 
 from llm.client import client, GEMINI_MODEL
+from llm.sources import RAG_TOOL_NAMES, parse_sources
 from llm.tools import TOOLS
 
 SYSTEM_INSTRUCTION = (
@@ -30,15 +33,68 @@ class ConversationSession:
             ),
         )
 
-    def send(self, message: str) -> str:
-        """Sends a user message and returns the model's text reply.
+    def send(
+        self, message: str
+    ) -> tuple[str, list[dict[str, str | None]], list[dict]]:
+        """Sends a user message, returns (reply_text, sources, steps).
 
         Tool calls the model makes along the way are executed automatically
         by the SDK (automatic function calling) before the final text reply
         is returned.
+        - `sources` lists the unique RAG citations (source_id, file, title,
+          url) pulled in by any RAG-backed tool during this turn.
+        - `steps` lists every tool call made this turn (id, tool, args,
+          result), in order, for observability.
+        Both are kept separate from the reply text so callers can display
+        them apart from the model's prose.
         """
+        history_before = len(self._chat.get_history())
         response = self._chat.send_message(message)
-        return response.text
+        new_history = self._chat.get_history()[history_before:]
+        return (
+            response.text,
+            self._extract_sources(new_history),
+            self._extract_steps(new_history),
+        )
+
+    def _extract_sources(self, new_history: list) -> list[dict[str, str | None]]:
+        sources: dict[str, dict[str, str | None]] = {}
+        for content in new_history:
+            for part in content.parts or []:
+                function_response = getattr(part, "function_response", None)
+                if function_response is None or function_response.name not in RAG_TOOL_NAMES:
+                    continue
+                result = (function_response.response or {}).get("result")
+                if isinstance(result, str):
+                    for source in parse_sources(result):
+                        sources[source["source_id"]] = source
+        return list(sources.values())
+
+    def _extract_steps(self, new_history: list) -> list[dict]:
+        steps: list[dict] = []
+        pending_call: dict | None = None
+        for content in new_history:
+            for part in content.parts or []:
+                function_call = getattr(part, "function_call", None)
+                if function_call is not None:
+                    pending_call = {
+                        "tool": function_call.name,
+                        "args": dict(function_call.args or {}),
+                    }
+                    continue
+                function_response = getattr(part, "function_response", None)
+                if function_response is not None and pending_call is not None:
+                    result = (function_response.response or {}).get("result")
+                    steps.append(
+                        {
+                            "id": str(uuid.uuid4()),
+                            "tool": pending_call["tool"],
+                            "args": pending_call["args"],
+                            "result": result if isinstance(result, str) else str(result),
+                        }
+                    )
+                    pending_call = None
+        return steps
 
     @property
     def history(self):

@@ -28,5 +28,14 @@ if __name__ == "__main__":
         if not user_input:
             continue
 
-        reply = session.send(user_input)
-        print(f"AI: {reply}\n")
+        reply, sources, steps = session.send(user_input)
+        print(f"AI: {reply}")
+        if steps:
+            print("Steps:")
+            for step in steps:
+                print(f"  - {step['tool']}({step['args']})")
+        if sources:
+            print("Sources:")
+            for source in sources:
+                print(f"  - {source['title']} ({source['file']})")
+        print()

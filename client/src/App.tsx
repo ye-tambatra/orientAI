@@ -1,7 +1,7 @@
-import Typography from '@mui/material/Typography'
+import ChatPage from './chat/ChatPage'
 
 function App() {
-  return <Typography variant="h1">Hello World</Typography>
+  return <ChatPage />
 }
 
 export default App
