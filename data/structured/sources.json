@@ -1,0 +1,63 @@
+[
+  {
+    "id": "SRC001",
+    "title": "Conditions d'accès en première année",
+    "type": "html",
+    "file": "data/sources/condition_access_en_premiere_annee.html",
+    "url": "https://ispm-edu.com/inscription.php",
+    "status": "official",
+    "consulted_at": "2026-08-26",
+    "description": "Page décrivant les conditions d'inscription et d'accès en première année à l'ISPM",
+    "extracted_data": [
+      "prerequis",
+      "conditions_admission"
+    ],
+    "limitations": null
+  },
+  {
+    "id": "SRC002",
+    "title": "Filières de l'ISPM",
+    "type": "html",
+    "file": "data/sources/page_ispm_filiere.html",
+    "url": "https://ispm-edu.com/filieres.php",
+    "status": "official",
+    "consulted_at": "2026-08-26",
+    "description": "Page listant les différentes filières de formation proposées par l'ISPM",
+    "extracted_data": [
+      "formations",
+      "filieres"
+    ],
+    "limitations": null
+  },
+  {
+    "id": "SRC003",
+    "title": "Présentation des filières de l'ISPM",
+    "type": "html",
+    "file": "data/sources/page_presentation_filiere.html",
+    "url": "https://ispm-edu.com/presentation.php",
+    "status": "official",
+    "consulted_at": "2026-08-26",
+    "description": "Page de présentation détaillée de l'institut et de ses différentes filières",
+    "extracted_data": [
+      "presentation",
+      "formations",
+      "debouches"
+    ],
+    "limitations": null
+  },
+  {
+    "id": "SRC004",
+    "title": "Emploi du temps des examens - Première année",
+    "type": "pdf",
+    "file": "data/sources/liste_emploi_du_temps_examen_premiere_annee.pdf",
+    "url": null,
+    "status": "official",
+    "consulted_at": "2026-08-26",
+    "description": "Fichier PDF contenant la liste des matières et l'emploi du temps des examens pour la première année",
+    "extracted_data": [
+      "matieres",
+      "examens"
+    ],
+    "limitations": null
+  }
+]
