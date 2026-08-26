@@ -8,7 +8,7 @@ import App from './App.tsx'
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#40AA40',
+      main: '#66BB6A',
     },
   },
 })

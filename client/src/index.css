@@ -13,16 +13,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #40AA40;
+  background: #d1d5db;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2e8b2e;
+  background: #9ca3af;
 }
 
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #40AA40 transparent;
+  scrollbar-color: #d1d5db transparent;
 }
