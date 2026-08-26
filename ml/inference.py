@@ -28,7 +28,7 @@ import numpy as np
 
 from ml.domaines import DOMAINES
 from ml.features import FEATURE_NAMES, encode_profile
-from ml.models import SoftmaxRegression
+from ml.models import SoftmaxRegression, model_from_dict
 from ml.vocab import get_tag
 
 ARTIFACT_PATH = Path(__file__).resolve().parent / "artifacts" / "model.json"
@@ -50,7 +50,7 @@ class OrientationModel:
         with open(artifact_path, encoding="utf-8") as f:
             data = json.load(f)
         self.classes = data["classes"]
-        self.model = SoftmaxRegression.from_dict(data["softmax_regression"])
+        self.model = model_from_dict(data["model"])
 
     def rank_domaines(self, profile: dict, k: int = 3) -> list[dict]:
         """Returns the top-k orientation domains ranked by predicted
@@ -130,6 +130,19 @@ class OrientationModel:
                 model's own top-1 prediction for this profile.
             top_n: How many of the strongest contributions to return.
         """
+        if not isinstance(self.model, SoftmaxRegression):
+            # ml/train.py always deploys SoftmaxRegression specifically
+            # because it is the only one of the 3 compared architectures
+            # with per-feature weights to explain from — see ml/train.py's
+            # "Deployed model" comment. This branch should be unreachable
+            # in practice; it exists so a future change to what gets
+            # deployed fails loudly here instead of on a wrong attribute.
+            raise ModelNotTrainedError(
+                f"Le modèle déployé ({type(self.model).__name__}) ne "
+                "supporte pas l'explication par contribution de variable "
+                "(réservée à SoftmaxRegression). Relancer `python -m "
+                "ml.train`, qui déploie toujours SoftmaxRegression."
+            )
         x = encode_profile(profile)
         if domaine_id is None:
             top = self.rank_domaines(profile, k=1)

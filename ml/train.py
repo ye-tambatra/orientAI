@@ -182,29 +182,44 @@ def main():
         "softmax_regression": _evaluate_model("softmax_regression", softmax, X_val, y_val, classes),
     }
 
-    # Select the best model by macro-F1 on the synthetic validation split.
+    # Best model by macro-F1 on the synthetic validation split — reported
+    # for the section-7 "comparaison d'au moins deux approches" requirement.
     best_name = max(results, key=lambda k: results[k]["macro_f1"])
-    best_model = {"baseline_centroide": baseline, "knn": knn, "softmax_regression": softmax}[best_name]
 
-    y_pred_best = predict_labels(best_model, X_val)
-    error_examples = _error_examples(val_rows, y_val, y_pred_best)
-    bias_by_bac = _bias_by_bac(val_rows, y_val, y_pred_best)
+    # Deployed model: ALWAYS softmax_regression, independent of best_name.
+    # NearestCentroidBaseline and KNNClassifier have no per-feature weights
+    # (no .W/.b — see ml.models), so they cannot back
+    # OrientationModel.expliquer_recommandation, which the brief requires
+    # (the demo question "Pourquoi ton modèle recommande-t-il ce
+    # parcours ?"). Deploying whichever model happens to win the raw
+    # metric would silently break that explanation the day a non-linear
+    # model wins — which does happen (baseline_centroide has won on this
+    # very dataset). So the winner of the comparison and the model that
+    # ships are deliberately different questions, both reported below
+    # instead of one silently overriding the other.
+    deployed_name = "softmax_regression"
+    deployed_model = softmax
+
+    y_pred_deployed = predict_labels(deployed_model, X_val)
+    error_examples = _error_examples(val_rows, y_val, y_pred_deployed)
+    bias_by_bac = _bias_by_bac(val_rows, y_val, y_pred_deployed)
 
     # 3. Real-survey generalization check --------------------------------
-    survey_eval = _evaluate_on_survey(best_model, classes)
+    survey_eval = _evaluate_on_survey(deployed_model, classes)
 
     # 4. Persist artifacts ------------------------------------------------
     artifact = {
-        "selected_model": best_name,
+        "selected_model": deployed_name,
         "classes": classes,
         "feature_names": FEATURE_NAMES,
-        "softmax_regression": softmax.to_dict(),
+        "model": deployed_model.to_dict(),
     }
     with open(ARTIFACTS / "model.json", "w", encoding="utf-8") as f:
         json.dump(artifact, f, ensure_ascii=False, indent=2)
 
     report = {
-        "selected_model": best_name,
+        "best_by_macro_f1": best_name,
+        "deployed_model": deployed_name,
         "n_train": len(train_rows),
         "n_val": len(val_rows),
         "results_on_synthetic_val": results,
@@ -216,9 +231,10 @@ def main():
         json.dump(report, f, ensure_ascii=False, indent=2)
 
     _write_markdown_report(report, ARTIFACTS / "evaluation_report.md")
-    print(f"Modèle sélectionné : {best_name}")
-    print(f"Accuracy val (synthétique) : {results[best_name]['accuracy']:.3f}")
-    print(f"Top-3 accuracy val (synthétique) : {results[best_name]['top3_accuracy']:.3f}")
+    print(f"Meilleur modèle (macro-F1, validation) : {best_name}")
+    print(f"Modèle déployé (chat) : {deployed_name}")
+    print(f"Accuracy val (synthétique, modèle déployé) : {results[deployed_name]['accuracy']:.3f}")
+    print(f"Top-3 accuracy val (synthétique, modèle déployé) : {results[deployed_name]['top3_accuracy']:.3f}")
     if survey_eval["n"]:
         print(f"Généralisation enquête réelle (n={survey_eval['n']}) — "
               f"top-1 dans candidats : {survey_eval['top1_dans_candidats_rate']:.3f}")
@@ -241,7 +257,21 @@ def _write_markdown_report(report: dict, path: Path) -> None:
         )
         f.write(f"- Profils d'entraînement (synthétiques) : {report['n_train']}\n")
         f.write(f"- Profils de validation (synthétiques, tenus à part) : {report['n_val']}\n")
-        f.write(f"- **Modèle sélectionné (meilleur macro-F1 en validation) : `{report['selected_model']}`**\n\n")
+        f.write(f"- **Meilleur modèle sur cette validation (macro-F1) : `{report['best_by_macro_f1']}`**\n")
+        f.write(f"- **Modèle réellement déployé dans le chat : `{report['deployed_model']}`**\n\n")
+        if report["best_by_macro_f1"] != report["deployed_model"]:
+            f.write(
+                "> Ces deux lignes diffèrent volontairement cette fois-ci : "
+                f"`{report['best_by_macro_f1']}` gagne sur la métrique brute, "
+                f"mais `{report['deployed_model']}` reste déployé car c'est "
+                "le seul des 3 modèles dont les poids sont interprétables "
+                "par variable (nécessaire pour `expliquer_recommandation_ml`, "
+                "qui répond à la question de démonstration \"Pourquoi ton "
+                "modèle recommande-t-il ce parcours ?\"). "
+                "`NearestCentroidBaseline` et `KNNClassifier` n'ont pas de "
+                "poids par variable et ne peuvent pas fournir cette "
+                "explication — voir `ml/train.py` pour le détail.\n\n"
+            )
 
         f.write("## Comparaison des approches (validation synthétique)\n\n")
         f.write("| Modèle | Accuracy | Top-3 accuracy | Macro-F1 | MRR | Stabilité |\n")
@@ -258,8 +288,8 @@ def _write_markdown_report(report: dict, path: Path) -> None:
             "gaussienne du vecteur de traits (voir `ml.metrics.stability_score`).\n"
         )
 
-        best = r[report["selected_model"]]
-        f.write(f"\n## Détail du modèle sélectionné (`{report['selected_model']}`)\n\n")
+        best = r[report["deployed_model"]]
+        f.write(f"\n## Détail du modèle déployé (`{report['deployed_model']}`)\n\n")
         f.write("### Rapport par domaine (precision / recall / F1 / support)\n\n")
         f.write("| Domaine | Precision | Recall | F1 | Support |\n|---|---|---|---|---|\n")
         for code, m in best["per_class"].items():

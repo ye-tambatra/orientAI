@@ -1,5 +1,5 @@
 {
-  "selected_model": "baseline_centroide",
+  "selected_model": "softmax_regression",
   "classes": [
     "agriculture_elevage",
     "agroalimentaire",
@@ -56,7 +56,7 @@
     "bac:Technique",
     "bac:Autre"
   ],
-  "softmax_regression": {
+  "model": {
     "type": "SoftmaxRegression",
     "classes": [
       "agriculture_elevage",

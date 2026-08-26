@@ -57,6 +57,20 @@ class NearestCentroidBaseline:
         sims = _cosine_similarity(X, self.centroids_)
         return _softmax(sims * 8.0)  # temperature sharpens an otherwise flat cosine range
 
+    def to_dict(self) -> dict:
+        return {
+            "type": "NearestCentroidBaseline",
+            "classes": self.classes_,
+            "centroids": self.centroids_.tolist(),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "NearestCentroidBaseline":
+        model = cls()
+        model.classes_ = data["classes"]
+        model.centroids_ = np.array(data["centroids"])
+        return model
+
 
 class KNNClassifier:
     """k-nearest-neighbours with cosine distance; votes weighted by
@@ -86,6 +100,23 @@ class KNNClassifier:
         row_sums = out.sum(axis=1, keepdims=True)
         row_sums[row_sums == 0] = 1.0
         return out / row_sums
+
+    def to_dict(self) -> dict:
+        return {
+            "type": "KNNClassifier",
+            "classes": self.classes_,
+            "k": self.k,
+            "X": self._X.tolist(),
+            "y": self._y.tolist(),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "KNNClassifier":
+        model = cls(k=data["k"])
+        model.classes_ = data["classes"]
+        model._X = np.array(data["X"])
+        model._y = np.array(data["y"])
+        return model
 
 
 class SoftmaxRegression:
@@ -152,3 +183,23 @@ def predict_labels(model, X: np.ndarray) -> list[str]:
     proba = model.predict_proba(X)
     idx = proba.argmax(axis=1)
     return [model.classes_[i] for i in idx]
+
+
+_MODEL_CLASSES = {
+    "NearestCentroidBaseline": NearestCentroidBaseline,
+    "KNNClassifier": KNNClassifier,
+    "SoftmaxRegression": SoftmaxRegression,
+}
+
+
+def model_from_dict(data: dict):
+    """Reconstructs whichever of the three model types `data["type"]` names.
+
+    Lets ml/train.py persist whichever model actually won the comparison
+    (previously it always saved+deployed SoftmaxRegression regardless of
+    which model `selected_model` named as the winner — the report and the
+    deployed model could silently disagree)."""
+    model_type = data["type"]
+    if model_type not in _MODEL_CLASSES:
+        raise ValueError(f"Type de modèle inconnu dans l'artifact : {model_type!r}")
+    return _MODEL_CLASSES[model_type].from_dict(data)

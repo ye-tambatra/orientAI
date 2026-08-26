@@ -4,7 +4,10 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 
 - Profils d'entraînement (synthétiques) : 1800
 - Profils de validation (synthétiques, tenus à part) : 450
-- **Modèle sélectionné (meilleur macro-F1 en validation) : `baseline_centroide`**
+- **Meilleur modèle sur cette validation (macro-F1) : `baseline_centroide`**
+- **Modèle réellement déployé dans le chat : `softmax_regression`**
+
+> Ces deux lignes diffèrent volontairement cette fois-ci : `baseline_centroide` gagne sur la métrique brute, mais `softmax_regression` reste déployé car c'est le seul des 3 modèles dont les poids sont interprétables par variable (nécessaire pour `expliquer_recommandation_ml`, qui répond à la question de démonstration "Pourquoi ton modèle recommande-t-il ce parcours ?"). `NearestCentroidBaseline` et `KNNClassifier` n'ont pas de poids par variable et ne peuvent pas fournir cette explication — voir `ml/train.py` pour le détail.
 
 ## Comparaison des approches (validation synthétique)
 
@@ -16,22 +19,22 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 
 `baseline_centroide` est le modèle de référence simple exigé par le brief (section 7). `stabilité` = fraction des profils dont le top-1 ne change pas sous une petite perturbation gaussienne du vecteur de traits (voir `ml.metrics.stability_score`).
 
-## Détail du modèle sélectionné (`baseline_centroide`)
+## Détail du modèle déployé (`softmax_regression`)
 
 ### Rapport par domaine (precision / recall / F1 / support)
 
 | Domaine | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| agriculture_elevage — Agriculture & Élevage | 0.86 | 0.96 | 0.91 | 26 |
-| agroalimentaire — Agroalimentaire | 0.94 | 0.85 | 0.89 | 34 |
-| chimie_mines — Chimie, Mines & Industries Pétrolières | 0.97 | 0.80 | 0.88 | 35 |
+| agriculture_elevage — Agriculture & Élevage | 0.87 | 1.00 | 0.93 | 26 |
+| agroalimentaire — Agroalimentaire | 0.97 | 0.85 | 0.91 | 34 |
+| chimie_mines — Chimie, Mines & Industries Pétrolières | 0.97 | 0.83 | 0.89 | 35 |
 | commerce_gestion — Commerce, Marketing & Gestion des Affaires | 0.93 | 0.90 | 0.92 | 31 |
 | data_ia — Data Science, Statistique & Intelligence Artificielle | 0.85 | 0.92 | 0.88 | 36 |
 | droit — Droit & Techniques Juridiques | 0.90 | 0.96 | 0.93 | 28 |
-| economie_management — Économie & Management de Projet | 0.88 | 0.76 | 0.81 | 29 |
-| finance_comptabilite — Finance & Comptabilité | 0.77 | 0.86 | 0.81 | 28 |
+| economie_management — Économie & Management de Projet | 0.81 | 0.76 | 0.79 | 29 |
+| finance_comptabilite — Finance & Comptabilité | 0.76 | 0.79 | 0.77 | 28 |
 | genie_civil — Génie Civil & Architecture | 0.86 | 0.97 | 0.91 | 32 |
-| genie_industriel — Génie Industriel, Mécanique & Électrotechnique | 0.91 | 0.94 | 0.93 | 33 |
+| genie_industriel — Génie Industriel, Mécanique & Électrotechnique | 0.94 | 0.94 | 0.94 | 33 |
 | hotellerie_restauration — Hôtellerie & Restauration | 0.93 | 1.00 | 0.96 | 27 |
 | informatique_numerique — Informatique & Numérique (développement, gestion, multimédia) | 0.96 | 0.79 | 0.87 | 33 |
 | pharmacie_sante — Pharmacie & Santé | 0.92 | 0.88 | 0.90 | 25 |
@@ -42,24 +45,24 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 
 | Intervalle de confiance | n | Confiance moyenne | Exactitude empirique |
 |---|---|---|---|
-| [0.0, 0.3) | 3 | 0.23 | 0.33 |
-| [0.3, 0.5) | 44 | 0.44 | 0.64 |
-| [0.5, 0.7) | 125 | 0.61 | 0.90 |
-| [0.7, 0.9) | 229 | 0.83 | 0.94 |
-| [0.9, 1.0] | 49 | 0.92 | 0.98 |
+| [0.0, 0.3) | 3 | 0.27 | 0.33 |
+| [0.3, 0.5) | 20 | 0.41 | 0.55 |
+| [0.5, 0.7) | 47 | 0.61 | 0.72 |
+| [0.7, 0.9) | 224 | 0.83 | 0.93 |
+| [0.9, 1.0] | 156 | 0.93 | 0.97 |
 
 ### Matrice de confusion (lignes = vrai, colonnes = prédit)
 
 | | agriculture_elevage | agroalimentaire | chimie_mines | commerce_gestion | data_ia | droit | economie_management | finance_comptabilite | genie_civil | genie_industriel | hotellerie_restauration | informatique_numerique | pharmacie_sante | reseaux_electronique | tourisme_environnement |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **agriculture_elevage** | 25 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **agriculture_elevage** | 26 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | **agroalimentaire** | 2 | 29 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 |
-| **chimie_mines** | 0 | 0 | 28 | 0 | 1 | 0 | 0 | 0 | 3 | 2 | 0 | 0 | 0 | 1 | 0 |
+| **chimie_mines** | 0 | 0 | 29 | 0 | 1 | 0 | 0 | 0 | 3 | 1 | 0 | 0 | 0 | 1 | 0 |
 | **commerce_gestion** | 0 | 0 | 0 | 28 | 0 | 0 | 0 | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 0 |
 | **data_ia** | 0 | 0 | 0 | 0 | 33 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 |
 | **droit** | 0 | 0 | 0 | 0 | 0 | 27 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
 | **economie_management** | 0 | 0 | 0 | 1 | 0 | 3 | 22 | 3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **finance_comptabilite** | 0 | 0 | 0 | 1 | 1 | 0 | 2 | 24 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **finance_comptabilite** | 0 | 0 | 0 | 1 | 1 | 0 | 4 | 22 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | **genie_civil** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 31 | 0 | 0 | 0 | 0 | 0 | 0 |
 | **genie_industriel** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 31 | 0 | 0 | 0 | 0 | 0 |
 | **hotellerie_restauration** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 27 | 0 | 0 | 0 | 0 |
@@ -77,7 +80,7 @@ Généré par `python -m ml.train`. Le modèle classe un profil parmi 15 **domai
 - Matières = « Statistiques / Données, Statistiques / Données, Statistiques / Données, Finance / Comptabilité », intérêts = « Mathématiques » → vrai **genie_industriel**, prédit **finance_comptabilite** *(étiquette bruitée par construction)*
 - Matières = « Droit / Juridique, Langues étrangères », intérêts = « Droit / Juridique » → vrai **economie_management**, prédit **droit** *(étiquette bruitée par construction)*
 - Matières = « Multimédia / Design numérique, Informatique / Programmation », intérêts = « Informatique / Programmation, Multimédia / Design numérique » → vrai **data_ia**, prédit **informatique_numerique** *(étiquette bruitée par construction)*
-- Matières = « Mécanique / Industrie, Mécanique / Industrie », intérêts = « Mathématiques, Mathématiques » → vrai **chimie_mines**, prédit **genie_civil**
+- Matières = « Mathématiques, Langues étrangères », intérêts = « Statistiques / Données » → vrai **finance_comptabilite**, prédit **economie_management**
 
 ### Étude de biais
 
@@ -103,12 +106,12 @@ Aucun attribut démographique (genre, âge, origine) n'est utilisé par le modè
 
 | Répondant | Population | Parcours déclaré | Domaines candidats | Top-3 prédit | Filières ISPM (top-1) | Top-1 ok | Top-3 ok |
 |---|---|---|---|---|---|---|---|
-| R001 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | reseaux_electronique, data_ia, informatique_numerique | ESIIA | ✅ | ✅ |
-| R002 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | reseaux_electronique, data_ia, genie_industriel | ESIIA | ✅ | ✅ |
+| R001 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | data_ia, reseaux_electronique, informatique_numerique | ISAIA, IGGLIA | ✅ | ✅ |
+| R002 | etudiant_lyceen | Intelligence Artificielle | data_ia, informatique_numerique, reseaux_electronique | data_ia, reseaux_electronique, genie_industriel | ISAIA, IGGLIA | ✅ | ✅ |
 | R003 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, data_ia, reseaux_electronique | IGGLIA, IMTICIA | ✅ | ✅ |
 | R004 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | informatique_numerique, data_ia, reseaux_electronique | IGGLIA, IMTICIA | ✅ | ✅ |
-| R005 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | hotellerie_restauration, commerce_gestion, informatique_numerique | TEH | ❌ | ✅ |
-| R006 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | reseaux_electronique, data_ia, informatique_numerique | ESIIA | ✅ | ✅ |
+| R005 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | commerce_gestion, hotellerie_restauration, informatique_numerique | CAA | ❌ | ✅ |
+| R006 | etudiant_lyceen | Informatique / Technologies de l’Information et de la Communication | informatique_numerique, data_ia, reseaux_electronique | data_ia, reseaux_electronique, informatique_numerique | ISAIA, IGGLIA | ✅ | ✅ |
 
 ## Limites générales du jeu de données et du modèle
 

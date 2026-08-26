@@ -1,5 +1,6 @@
 {
-  "selected_model": "baseline_centroide",
+  "best_by_macro_f1": "baseline_centroide",
+  "deployed_model": "softmax_regression",
   "n_train": 1800,
   "n_val": 450,
   "results_on_synthetic_val": {
@@ -1222,10 +1223,10 @@
       "label_noise": true
     },
     {
-      "matieres_preferees": "Mécanique / Industrie, Mécanique / Industrie",
-      "centres_interet": "Mathématiques, Mathématiques",
-      "vrai": "chimie_mines",
-      "predit": "genie_civil",
+      "matieres_preferees": "Mathématiques, Langues étrangères",
+      "centres_interet": "Statistiques / Données",
+      "vrai": "finance_comptabilite",
+      "predit": "economie_management",
       "label_noise": false
     }
   ],
@@ -1253,12 +1254,13 @@
           "reseaux_electronique"
         ],
         "top3_predit": [
-          "reseaux_electronique",
           "data_ia",
+          "reseaux_electronique",
           "informatique_numerique"
         ],
         "filieres_ispm_correspondantes": [
-          "ESIIA"
+          "ISAIA",
+          "IGGLIA"
         ],
         "top1_dans_candidats": true,
         "top3_dans_candidats": true
@@ -1273,12 +1275,13 @@
           "reseaux_electronique"
         ],
         "top3_predit": [
-          "reseaux_electronique",
           "data_ia",
+          "reseaux_electronique",
           "genie_industriel"
         ],
         "filieres_ispm_correspondantes": [
-          "ESIIA"
+          "ISAIA",
+          "IGGLIA"
         ],
         "top1_dans_candidats": true,
         "top3_dans_candidats": true
@@ -1335,12 +1338,12 @@
           "reseaux_electronique"
         ],
         "top3_predit": [
-          "hotellerie_restauration",
           "commerce_gestion",
+          "hotellerie_restauration",
           "informatique_numerique"
         ],
         "filieres_ispm_correspondantes": [
-          "TEH"
+          "CAA"
         ],
         "top1_dans_candidats": false,
         "top3_dans_candidats": true
@@ -1355,12 +1358,13 @@
           "reseaux_electronique"
         ],
         "top3_predit": [
-          "reseaux_electronique",
           "data_ia",
+          "reseaux_electronique",
           "informatique_numerique"
         ],
         "filieres_ispm_correspondantes": [
-          "ESIIA"
+          "ISAIA",
+          "IGGLIA"
         ],
         "top1_dans_candidats": true,
         "top3_dans_candidats": true
