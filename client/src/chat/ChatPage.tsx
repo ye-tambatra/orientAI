@@ -365,6 +365,9 @@ export default function ChatPage() {
               <SendIcon />
             </IconButton>
           </Stack>
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', textAlign: 'center', mt: 1, fontSize: '0.7rem' }}>
+            ORIENT’IA constitue un outil d’aide à l’orientation. Ses recommandations ne remplacent ni l’avis d’un conseiller pédagogique ni une décision officielle d’admission.
+          </Typography>
         </Box>
 
         <OrientationSurveyModal
