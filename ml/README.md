@@ -56,6 +56,28 @@ Le notebook `ml/notebooks/01_eda_et_entrainement.ipynb` rejoue la même
 démarche cellule par cellule (EDA, comparaison des 3 approches, matrice de
 confusion, généralisation).
 
+## Tester le modèle
+
+Quatre façons de le tester, de la plus automatique à la plus proche de
+l'utilisateur final — voir aussi `TESTING.md` à la racine pour le détail
+pas-à-pas :
+
+1. **Évaluation automatique complète** — `python -m ml.train`, puis lire
+   `ml/artifacts/evaluation_report.md` (comparaison des 3 modèles,
+   matrice de confusion, biais, erreurs, généralisation sur l'enquête).
+   C'est le "test" au sens du brief (section 13/14).
+2. **REPL manuel, modèle seul** — `python -m ml.try_model` : tape un
+   profil (matières/compétences/intérêts séparés par des virgules), voir
+   le classement de domaines + filières ISPM + points forts. Ne nécessite
+   ni clé API ni le reste de l'application.
+3. **Outils de l'agent, en isolation** — appeler directement
+   `llm.tools.analyser_profil_ml(...)` / `calculer_score_adequation(...)` /
+   `identifier_points_forts(...)` en Python, sans passer par le LLM.
+4. **Bout en bout, via l'agent conversationnel** — `python -m llm.demo_cli`
+   (nécessite `GEMINI_API_KEY` dans `.env`) : poser une vraie question
+   d'orientation et vérifier que l'agent appelle le bon outil ML et cite
+   sa sortie correctement.
+
 ## Structure
 
 | Fichier | Rôle |
