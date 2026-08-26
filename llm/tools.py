@@ -149,6 +149,8 @@ def analyser_profil_ml(
     matieres_preferees: list[str] | None = None,
     competences: list[str] | None = None,
     centres_interet: list[str] | None = None,
+    serie_bac: str = "",
+    environnement_travail: str = "",
 ) -> str:
     """Classe un profil candidat parmi les domaines généraux d'orientation
     pédagogique (Informatique, Data/IA, Commerce, Droit, Santé...) à l'aide
@@ -177,6 +179,14 @@ def analyser_profil_ml(
         matieres_preferees: Les matières que l'utilisateur préfère.
         competences: Les compétences déclarées par l'utilisateur.
         centres_interet: Les centres d'intérêt déclarés par l'utilisateur.
+        serie_bac: La série de bac de l'utilisateur si connue (ex: S, D, C,
+            A, L, Technique). Signal utile — un lycéen en filière littéraire
+            (L) n'a par exemple statistiquement pas le même profil qu'un
+            candidat en série scientifique. Laisser vide si non précisé, et
+            demander l'info à l'utilisateur si elle n'a pas encore été donnée.
+        environnement_travail: Le type d'environnement de travail recherché
+            si connu (ex: bureau, atelier, laboratoire, terrain,
+            contact_client). Laisser vide si non précisé.
     """
     try:
         model = get_model()
@@ -187,6 +197,8 @@ def analyser_profil_ml(
         "matieres_preferees": matieres_preferees or [],
         "competences": competences or [],
         "centres_interet": centres_interet or [],
+        "serie_bac": serie_bac,
+        "environnement_travail": environnement_travail,
     }
     ranking = model.rank_domaines(profile, k=3)
     if not ranking:
@@ -220,6 +232,8 @@ def calculer_score_adequation(
     matieres_preferees: list[str] | None = None,
     competences: list[str] | None = None,
     centres_interet: list[str] | None = None,
+    serie_bac: str = "",
+    environnement_travail: str = "",
 ) -> str:
     """Calcule le score d'adéquation (modèle ML) entre un profil et UN domaine
     d'orientation donné (ex: "data_ia", "commerce_gestion", "droit"...).
@@ -235,6 +249,11 @@ def calculer_score_adequation(
         matieres_preferees: Les matières que l'utilisateur préfère.
         competences: Les compétences déclarées par l'utilisateur.
         centres_interet: Les centres d'intérêt déclarés par l'utilisateur.
+        serie_bac: La série de bac de l'utilisateur si connue (ex: S, D, C,
+            A, L, Technique). Laisser vide si non précisé.
+        environnement_travail: Le type d'environnement de travail recherché
+            si connu (ex: bureau, atelier, laboratoire, terrain,
+            contact_client). Laisser vide si non précisé.
     """
     try:
         model = get_model()
@@ -245,6 +264,8 @@ def calculer_score_adequation(
         "matieres_preferees": matieres_preferees or [],
         "competences": competences or [],
         "centres_interet": centres_interet or [],
+        "serie_bac": serie_bac,
+        "environnement_travail": environnement_travail,
     }
     result = model.score_adequation(profile, domaine)
     if "error" in result:
@@ -302,6 +323,73 @@ def identifier_points_forts(
     )
 
 
+def expliquer_recommandation_ml(
+    matieres_preferees: list[str] | None = None,
+    competences: list[str] | None = None,
+    centres_interet: list[str] | None = None,
+    serie_bac: str = "",
+    environnement_travail: str = "",
+    domaine: str = "",
+) -> str:
+    """Explique QUANTITATIVEMENT pourquoi le modèle ML recommande un domaine
+    donné : la contribution numérique exacte de chaque élément déclaré
+    (matière, intérêt, compétence, série de bac, environnement) au score
+    de ce domaine, triée par importance.
+
+    Utilise ceci en priorité quand l'utilisateur demande explicitement
+    "pourquoi" le modèle recommande un parcours/domaine — c'est plus
+    précis que identifier_points_forts (qui ne donne que des labels) : ici
+    tu obtiens de vrais chiffres tracés jusqu'aux poids appris par le
+    modèle, à citer tels quels plutôt qu'à reformuler de façon vague.
+
+    Args:
+        matieres_preferees: Les matières que l'utilisateur préfère.
+        competences: Les compétences déclarées par l'utilisateur.
+        centres_interet: Les centres d'intérêt déclarés par l'utilisateur.
+        serie_bac: La série de bac si connue.
+        environnement_travail: L'environnement de travail souhaité si connu.
+        domaine: L'identifiant du domaine à expliquer (ex: "data_ia"). Si
+            vide, explique le domaine que le modèle recommande en premier
+            pour ce profil.
+    """
+    try:
+        model = get_model()
+    except ModelNotTrainedError as e:
+        return _profil_ml_indisponible(str(e))
+
+    profile = {
+        "matieres_preferees": matieres_preferees or [],
+        "competences": competences or [],
+        "centres_interet": centres_interet or [],
+        "serie_bac": serie_bac,
+        "environnement_travail": environnement_travail,
+    }
+    explanation = model.expliquer_recommandation(profile, domaine_id=domaine or None)
+    if not explanation["contributions"]:
+        return (
+            "[Modèle ML] Pas assez d'éléments déclarés dans le profil pour "
+            "expliquer une recommandation. Demande à l'utilisateur ses "
+            "matières, compétences ou centres d'intérêt d'abord."
+        )
+    lines = [
+        f"- {c['label']} : contribution {c['contribution']:+.2f} "
+        f"(poids appris par le modèle : {c['poids_appris']:+.2f})"
+        for c in explanation["contributions"]
+    ]
+    return (
+        f"[Résultat du modèle ML ORIENT'IA] Pour le domaine « "
+        f"{explanation['label']} » (score : {explanation['score']:.2f}), "
+        "voici les éléments déclarés par l'utilisateur qui pèsent le plus "
+        "dans ce score, du plus au moins déterminant :\n" + "\n".join(lines) +
+        f"\n(biais de base du modèle pour ce domaine, indépendant du "
+        f"profil : {explanation['biais_du_modele']:+.2f}). Une contribution "
+        "positive pousse vers ce domaine, une contribution négative "
+        "l'éloigne. Seuls les éléments explicitement déclarés par "
+        "l'utilisateur apparaissent ici — jamais un trait de personnalité "
+        "inféré."
+    )
+
+
 TOOLS = [
     get_current_time,
     echo,
@@ -313,5 +401,6 @@ TOOLS = [
     identifier_debouches,
     calculer_score_adequation,
     identifier_points_forts,
+    expliquer_recommandation_ml,
     expliquer_recommandation,
 ]

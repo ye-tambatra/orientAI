@@ -1,7 +1,9 @@
 """Inference-time wrapper: loads the trained artifact and exposes the
-three operations the conversational agent needs (brief section 8:
-"Intégration obligatoire du modèle" — analyser_profil / classer_parcours /
-calculer_adequation / identifier_points_forts).
+operations the conversational agent needs (brief section 8: "Intégration
+obligatoire du modèle" — analyser_profil / classer_parcours /
+calculer_adequation / identifier_points_forts), plus a quantitative
+`expliquer_recommandation` used to answer the demo question "Pourquoi
+ton modèle recommande-t-il ce parcours ?".
 
 The model predicts a general pedagogical/professional orientation
 **domain** (ml.domaines), not directly an ISPM filière — see
@@ -25,7 +27,7 @@ from pathlib import Path
 import numpy as np
 
 from ml.domaines import DOMAINES
-from ml.features import encode_profile, tags_from_profile
+from ml.features import FEATURE_NAMES, encode_profile
 from ml.models import SoftmaxRegression
 from ml.vocab import get_tag
 
@@ -93,23 +95,70 @@ class OrientationModel:
         (the softmax weight of each active tag for the predicted class) —
         NOT a personality inference, only a readout of user-declared
         subjects/interests/competences (brief section 16 compliance)."""
-        tag_scores = tags_from_profile(profile)
-        if not tag_scores:
-            return []
-        top = self.rank_domaines(profile, k=1)
-        if not top:
-            return []
-        predicted_domaine = top[0]["domaine"]
-        class_index = self.classes.index(predicted_domaine)
+        explanation = self.expliquer_recommandation(profile, top_n=top_n)
+        return [c["label"] for c in explanation["contributions"] if c["contribution"] > 0]
 
-        from ml.vocab import TAG_IDS
+    @staticmethod
+    def _feature_label(feature_name: str) -> str:
+        kind, value = feature_name.split(":", 1)
+        if kind == "tag":
+            return get_tag(value).label
+        if kind == "env":
+            return f"Environnement de travail souhaité : {value}"
+        if kind == "bac":
+            return f"Série de bac : {value}"
+        return feature_name
+
+    def expliquer_recommandation(self, profile: dict, domaine_id: str | None = None,
+                                  top_n: int = 5) -> dict:
+        """Quantitative, auditable explanation of a domain's score for a
+        profile: for every DECLARED element (subject/interest/competence
+        tag, série de bac, environnement souhaité), its exact contribution
+        to that domain's pre-softmax score (learned weight × presence in
+        the profile), sorted by contribution.
+
+        This directly answers the brief's demo question "Pourquoi ton
+        modèle recommande-t-il ce parcours ?" with real numbers traced
+        back to what the model actually learned — not a generated
+        rationalisation. Elements the user did NOT declare contribute
+        zero and are omitted; character/personality is never a candidate
+        feature (brief section 16) so it can never appear here.
+
+        Args:
+            profile: The profile dict (see ml.features.encode_profile).
+            domaine_id: Explain this specific domain; defaults to the
+                model's own top-1 prediction for this profile.
+            top_n: How many of the strongest contributions to return.
+        """
+        x = encode_profile(profile)
+        if domaine_id is None:
+            top = self.rank_domaines(profile, k=1)
+            if not top:
+                return {"domaine": None, "score": None, "contributions": []}
+            domaine_id = top[0]["domaine"]
+        class_index = self.classes.index(domaine_id)
+
         contributions = []
-        for tag_id, presence in tag_scores.items():
-            i = TAG_IDS.index(tag_id)
-            weight = self.model.W[i, class_index]
-            contributions.append((tag_id, weight * presence))
-        contributions.sort(key=lambda t: t[1], reverse=True)
-        return [get_tag(tag_id).label for tag_id, w in contributions[:top_n] if w > 0]
+        for i, feature_name in enumerate(FEATURE_NAMES):
+            if x[i] == 0:
+                continue
+            weight = float(self.model.W[i, class_index])
+            contributions.append({
+                "label": self._feature_label(feature_name),
+                "valeur_declaree": True,
+                "poids_appris": round(weight, 4),
+                "contribution": round(weight * float(x[i]), 4),
+            })
+        contributions.sort(key=lambda c: c["contribution"], reverse=True)
+
+        proba = self.model.predict_proba(x.reshape(1, -1))[0][class_index]
+        return {
+            "domaine": domaine_id,
+            "label": DOMAINES[domaine_id].label,
+            "score": round(float(proba), 4),
+            "biais_du_modele": round(float(self.model.b[class_index]), 4),
+            "contributions": contributions[:top_n],
+        }
 
 
 @lru_cache(maxsize=1)
