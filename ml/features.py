@@ -48,12 +48,26 @@ def _as_text(value) -> str:
     return str(value)
 
 
-def _match_categorical(value: str, options: tuple[str, ...]) -> str | None:
+# Free-text synonyms seen in the wild (e.g. the questionnaire's canned
+# options) that don't literally contain the canonical ENVIRONNEMENTS value.
+_ENVIRONNEMENT_SYNONYMS: dict[str, str] = {
+    "plein air": "terrain",
+    "exterieur": "terrain",
+    "teletravail": "bureau",
+    "domicile": "bureau",
+}
+
+
+def _match_categorical(value: str, options: tuple[str, ...],
+                        synonyms: dict[str, str] | None = None) -> str | None:
     if not value:
         return None
     norm_value = strip_accents(value).lower()
     for opt in options:
         if strip_accents(opt).lower() in norm_value:
+            return opt
+    for synonym, opt in (synonyms or {}).items():
+        if synonym in norm_value:
             return opt
     return None
 
@@ -77,7 +91,8 @@ def encode_profile(profile: dict) -> np.ndarray:
         vec[i] = tag_scores.get(tag_id, 0.0)
 
     offset = len(TAG_IDS)
-    env = _match_categorical(_as_text(profile.get("environnement_travail")), ENVIRONNEMENTS)
+    env = _match_categorical(_as_text(profile.get("environnement_travail")), ENVIRONNEMENTS,
+                              synonyms=_ENVIRONNEMENT_SYNONYMS)
     if env is not None:
         vec[offset + ENVIRONNEMENTS.index(env)] = 1.0
 

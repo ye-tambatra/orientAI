@@ -44,7 +44,8 @@ class Tag:
 
 TAGS: tuple[Tag, ...] = (
     Tag("informatique_prog", "Informatique / Programmation",
-        ("informatique", "programmation", "algorithmique", "developpement", "code", "logiciel"),
+        ("informatique", "programmation", "algorithmique", "developpement", "code", "logiciel",
+         "technologie", "high-tech", "hightech"),
         {"informatique_numerique": .9, "reseaux_electronique": .7, "data_ia": .8, "genie_industriel": .3}),
     Tag("intelligence_artificielle", "Intelligence artificielle",
         ("intelligence artificielle", " ia ", "machine learning", "data science", "ia,", "ia."),
@@ -75,7 +76,8 @@ TAGS: tuple[Tag, ...] = (
         ("mines", "geologie", "petrol"),
         {"chimie_mines": .9}),
     Tag("biologie_sante", "Biologie / Santé",
-        ("biologie", "sante", "physiologie", "genetique", "microbiologie"),
+        ("biologie", "sante", "physiologie", "genetique", "microbiologie", "svt",
+         "aider les autres", "aider autrui"),
         {"pharmacie_sante": .8, "agroalimentaire": .6, "agriculture_elevage": .5}),
     Tag("pharmacie_medicament", "Pharmacie / Médicament",
         ("pharmacie", "medicament", "pharmacologie"),
@@ -105,7 +107,7 @@ TAGS: tuple[Tag, ...] = (
         ("multimedia", "design", "creation", "audiovisuel", "graphisme", " son", "pao"),
         {"informatique_numerique": .95}),
     Tag("communication", "Communication",
-        ("communication",),
+        ("communication", "francais"),
         {"informatique_numerique": .5, "commerce_gestion": .4, "hotellerie_restauration": .4}),
     Tag("tourisme_environnement", "Tourisme / Environnement",
         ("tourisme", "environnement", "nature", "ecologie", "faune", "flore", "voyage"),
