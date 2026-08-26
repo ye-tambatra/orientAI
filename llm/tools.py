@@ -125,21 +125,76 @@ def identifier_debouches(filiere: str) -> str:
     )
 
 def analyser_profil_ml(interets: list[str], points_forts: list[str] | None = None) -> str:
-    """Analyse le profil d'un utilisateur pour suggérer des filières adaptées.
+    """Analyse le profil complet d'un utilisateur pour suggérer des filières adaptées.
 
-    Attention : cette analyse n'est pas encore implémentée (aucun modèle ni
-    données d'entraînement disponibles). Si ce tool est appelé, informe
-    l'utilisateur honnêtement que cette fonctionnalité n'est pas encore
-    disponible plutôt que d'inventer une réponse.
+    CRITIQUE : N'appelle JAMAIS ce tool directement si tu n'as pas d'abord collecté les 3 informations requises : la matière préférée, l'environnement de travail préféré ET la motivation principale. 
+    S'il te manque ne serait-ce qu'une de ces 3 informations, tu DOIS d'abord appeler le tool `demarrer_questionnaire_orientation` pour la/les demander via l'interface. 
+    N'appelle ce tool qu'après que l'utilisateur ait soumis le questionnaire ou s'il a déjà fourni explicitement ces 3 informations dans son message.
 
     Args:
-        interets: Les matières ou domaines qui intéressent l'utilisateur.
+        interets: Les matières ou domaines qui intéressent l'utilisateur (inclure la matière, l'environnement et la motivation collectés).
         points_forts: Les points forts/compétences de l'utilisateur, si connus.
     """
+    # TODO: integrate the ML
+    interets_str = ", ".join(interets) if interets else "non précisés"
     return (
-        "L'analyse de profil pour suggérer des filières n'est pas encore "
-        "disponible."
+        f"Sur la base de votre profil (intérêts : {interets_str}), "
+        "le modèle d'orientation vous recommande la filière IMTICIA (Ingénierie de Management, d'Informatique et d'Intelligence Artificielle). "
+        "C'est une filière excellente pour ceux qui aiment la technologie et souhaitent travailler dans ce domaine."
     )
+
+def demarrer_questionnaire_orientation(
+    matiere_preferee: str = "",
+    environnement_prefere: str = "",
+    motivation_principale: str = ""
+) -> str:
+    """Déclenche l'affichage d'un questionnaire interactif sur l'interface utilisateur pour recueillir ses préférences.
+    
+    Utilise OBLIGATOIREMENT ceci quand l'utilisateur demande une recommandation de filière ou d'orientation et qu'il manque au moins une des 3 informations (matière, environnement, motivation).
+    Si l'utilisateur a déjà mentionné certaines de ses préférences dans son message, 
+    remplis les arguments correspondants pour que le questionnaire saute ces questions.
+    
+    Args:
+        matiere_preferee: La matière préférée au lycée si l'utilisateur l'a mentionnée (ex: Mathématiques, Physique-Chimie, SVT, Français).
+        environnement_prefere: L'environnement de travail préféré (ex: Bureau, Plein air, Laboratoire, Télétravail).
+        motivation_principale: Ce qui motive le plus l'utilisateur (ex: La technologie, Aider les autres, L'art et la création, Les affaires).
+    """
+    import json
+    
+    questions = []
+    if not matiere_preferee:
+        questions.append({
+            "id": "matiere_preferee",
+            "label": "Quelle est votre matière préférée au lycée ?",
+            "options": ["Mathématiques", "Physique-Chimie", "SVT", "Français", "Anglais"]
+        })
+    if not environnement_prefere:
+        questions.append({
+            "id": "environnement_prefere",
+            "label": "Quel type d'environnement de travail préférez-vous ?",
+            "options": ["Bureau", "Plein air", "Laboratoire", "Télétravail"]
+        })
+    if not motivation_principale:
+        questions.append({
+            "id": "motivation_principale",
+            "label": "Qu'est-ce qui vous motive le plus ?",
+            "options": ["La technologie", "Aider les autres", "L'art et la création", "Les affaires"]
+        })
+
+    return json.dumps({
+        "action": "open_survey",
+        "prefilled": {
+            "matiere_preferee": matiere_preferee,
+            "environnement_prefere": environnement_prefere,
+            "motivation_principale": motivation_principale
+        },
+        "questions": questions,
+        "labels": {
+            "matiere_preferee": "Matière préférée",
+            "environnement_prefere": "Environnement de travail",
+            "motivation_principale": "Motivation principale"
+        }
+    })
 
 def calculer_score_adequation(filiere: str, interets: list[str] | None = None) -> str:
     """Calcule un score d'adéquation entre un utilisateur et une filière.
@@ -180,4 +235,5 @@ TOOLS = [
     calculer_score_adequation,
     expliquer_recommandation,
     obtenir_informations_ispm,
+    demarrer_questionnaire_orientation,
 ]

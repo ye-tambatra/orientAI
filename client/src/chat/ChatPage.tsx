@@ -8,22 +8,56 @@ import Typography from '@mui/material/Typography'
 import Avatar from '@mui/material/Avatar'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
+import Button from '@mui/material/Button'
 import SendIcon from '@mui/icons-material/Send'
 import SmartToyIcon from '@mui/icons-material/SmartToy'
 import PersonIcon from '@mui/icons-material/Person'
+import AssignmentIcon from '@mui/icons-material/Assignment'
 import { useChatSession } from './useChatSession'
 import StepsAccordion from './StepsAccordion'
 import SourcesList from './SourcesList'
 import ReactMarkdown from 'react-markdown'
+import OrientationSurveyModal from './OrientationSurveyModal'
 
 export default function ChatPage() {
   const { messages, isSending, error, sendMessage } = useChatSession()
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  const [surveyOpen, setSurveyOpen] = useState(false)
+  const [surveyPrefilled, setSurveyPrefilled] = useState<Record<string, string>>({})
+  const [surveyQuestions, setSurveyQuestions] = useState<any[]>([])
+  const [surveyLabels, setSurveyLabels] = useState<Record<string, string>>({})
+  const [handledSurveyMessages, setHandledSurveyMessages] = useState<Set<string>>(new Set())
+  const [currentSurveyMessageId, setCurrentSurveyMessageId] = useState<string | null>(null)
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isSending])
+
+  const handleOpenSurvey = (messageId: string, args: Record<string, string>, questions: any[], labels: Record<string, string>) => {
+    setSurveyPrefilled(args)
+    setSurveyQuestions(questions)
+    setSurveyLabels(labels)
+    setCurrentSurveyMessageId(messageId)
+    setSurveyOpen(true)
+  }
+
+  const handleSurveyFinish = (results: Record<string, string>) => {
+    setSurveyOpen(false)
+    if (currentSurveyMessageId) {
+      setHandledSurveyMessages(prev => new Set(prev).add(currentSurveyMessageId))
+      setCurrentSurveyMessageId(null)
+    }
+
+    const listText = Object.entries(results)
+      .map(([key, value]) => `- **${surveyLabels[key] || key} :** ${value || 'Non précisé'}`)
+      .join('\n');
+
+    const resultsText = `Résultats du questionnaire d'orientation :\n\n${listText}\n\nPeux-tu analyser mon profil avec ces informations ?`;
+
+    sendMessage(resultsText)
+  }
 
   const handleSend = () => {
     if (!input.trim() || isSending) return
@@ -110,7 +144,7 @@ export default function ChatPage() {
                     <SmartToyIcon fontSize="small" />
                   </Avatar>
                 )}
-                
+
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
                   <Paper
                     variant="outlined"
@@ -146,6 +180,36 @@ export default function ChatPage() {
                       <SourcesList sources={message.sources} />
                     </Box>
                   )}
+
+                  {message.steps && (() => {
+                    const surveyStep = message.steps.find(s => s.tool === 'demarrer_questionnaire_orientation');
+                    if (!surveyStep) return null;
+                    const isHandled = handledSurveyMessages.has(message.id);
+
+                    let parsedQuestions: any[] = [];
+                    let parsedLabels: Record<string, string> = {};
+                    try {
+                      const data = JSON.parse(surveyStep.result);
+                      parsedQuestions = data.questions || [];
+                      parsedLabels = data.labels || {};
+                    } catch (e) { }
+
+                    return (
+                      <Box sx={{ width: '100%', mt: 1 }}>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          size="small"
+                          disabled={isHandled}
+                          startIcon={<AssignmentIcon />}
+                          onClick={() => handleOpenSurvey(message.id, surveyStep.args as Record<string, string>, parsedQuestions, parsedLabels)}
+                          sx={{ textTransform: 'none', borderRadius: 2 }}
+                        >
+                          {isHandled ? "Questionnaire terminé" : "Commencer le questionnaire"}
+                        </Button>
+                      </Box>
+                    );
+                  })()}
                 </Box>
 
                 {isUser && (
@@ -194,6 +258,14 @@ export default function ChatPage() {
           </IconButton>
         </Stack>
       </Box>
+
+      <OrientationSurveyModal
+        open={surveyOpen}
+        prefilledData={surveyPrefilled}
+        questions={surveyQuestions}
+        onFinish={handleSurveyFinish}
+        onClose={() => setSurveyOpen(false)}
+      />
     </Box>
   )
 }
