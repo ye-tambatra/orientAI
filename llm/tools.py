@@ -222,18 +222,28 @@ def analyser_profil_ml(
             "la motivation principale avant de recommander une orientation."
         )
     lines = [
-        f"{i + 1}. {r['label']} (score du modèle : {r['score']:.2f}) — "
-        f"filières ISPM à explorer : {', '.join(r['filieres_ispm_correspondantes'])}"
+        f"{i + 1}. {r['label']} — filières ISPM à explorer : "
+        f"{', '.join(r['filieres_ispm_correspondantes'])} (raison : {r['raison']})"
         for i, r in enumerate(ranking)
     ]
+    confiance = ranking[0]["confiance"]
+    confiance_phrase = {
+        "nette": "Le premier domaine se détache clairement des autres.",
+        "moderee": "Le premier domaine ressort, mais d'autres restent proches — ça vaut le coup de les garder en tête.",
+        "incertaine": "Les domaines ci-dessous sont proches les uns des autres pour l'instant : pas assez d'éléments déclarés pour trancher nettement, il vaut mieux explorer plusieurs pistes plutôt que se fixer sur une seule.",
+    }[confiance]
     return (
         "[Résultat du modèle ML ORIENT'IA — classement statistique par "
-        "domaine d'orientation, pas une décision officielle] D'après le "
-        "profil déclaré, les domaines les plus compatibles sont :\n" +
+        "domaine d'orientation, pas une décision officielle. NE MENTIONNE "
+        "AUCUN score numérique à l'utilisateur : reformule uniquement à "
+        "partir du label du domaine, de la raison donnée et du niveau de "
+        "confiance] D'après le profil déclaré, les domaines les plus "
+        "compatibles sont :\n" +
         "\n".join(lines) +
-        "\nCe score reflète uniquement les matières/compétences/intérêts "
-        "explicitement déclarés par l'utilisateur — il n'utilise ni trait de "
-        "personnalité, ni caractéristique personnelle sensible. Les "
+        f"\n\nNiveau de confiance du classement : {confiance}. {confiance_phrase}" +
+        "\nCette raison reflète uniquement les matières/compétences/intérêts "
+        "explicitement déclarés par l'utilisateur — jamais un trait de "
+        "personnalité ni une caractéristique personnelle sensible. Les "
         "filières ISPM listées sont une correspondance indicative, pas une "
         "sortie du modèle : vérifie leurs prérequis et débouchés réels via "
         "les outils documentaires avant de conclure."
@@ -430,14 +440,16 @@ def calculer_score_adequation(
     if "error" in result:
         return f"[Modèle ML] {result['error']}"
     return (
-        f"[Résultat du modèle ML ORIENT'IA] Score d'adéquation pour le "
-        f"domaine « {result['label']} » : {result['score']:.2f} (sur une "
-        f"échelle de probabilité 0-1 ; ce domaine se classe "
-        f"{result['rang_parmi_domaines']}e/{result['nb_domaines']} pour ce "
-        f"profil). Filières ISPM correspondantes à explorer : "
-        f"{', '.join(result['filieres_ispm_correspondantes'])}. Ce chiffre "
-        "est une estimation statistique, pas une garantie de réussite ni "
-        "une décision d'admission."
+        f"[Résultat du modèle ML ORIENT'IA — NE MENTIONNE AUCUN score "
+        f"numérique à l'utilisateur, reformule avec le niveau de confiance "
+        f"et la raison] Adéquation avec le domaine « {result['label']} » : "
+        f"confiance {result['confiance']} (ce domaine se classe "
+        f"{result['rang_parmi_domaines']}e sur {result['nb_domaines']} pour "
+        f"ce profil), raison : {result['raison']}. Filières ISPM "
+        f"correspondantes à explorer : "
+        f"{', '.join(result['filieres_ispm_correspondantes'])}. C'est une "
+        "estimation statistique, pas une garantie de réussite ni une "
+        "décision d'admission."
     )
 
 
@@ -490,16 +502,17 @@ def expliquer_recommandation_ml(
     environnement_travail: str = "",
     domaine: str = "",
 ) -> str:
-    """Explique QUANTITATIVEMENT pourquoi le modèle ML recommande un domaine
-    donné : la contribution numérique exacte de chaque élément déclaré
-    (matière, intérêt, compétence, série de bac, environnement) au score
-    de ce domaine, triée par importance.
+    """Explique pourquoi le modèle ML recommande un domaine donné : le poids
+    RELATIF de chaque élément déclaré (matière, intérêt, compétence, série
+    de bac, environnement) dans ce score, du plus au moins déterminant.
 
     Utilise ceci en priorité quand l'utilisateur demande explicitement
     "pourquoi" le modèle recommande un parcours/domaine — c'est plus
-    précis que identifier_points_forts (qui ne donne que des labels) : ici
-    tu obtiens de vrais chiffres tracés jusqu'aux poids appris par le
-    modèle, à citer tels quels plutôt qu'à reformuler de façon vague.
+    précis que identifier_points_forts (qui ne donne que des labels). Le
+    poids exact appris par le modèle n'est PAS destiné à être cité comme un
+    chiffre à l'utilisateur (ex: "poids de 1.53") : reformule toujours en
+    langage courant ("c'est surtout... qui joue en ta faveur", "... pèse
+    peu ici") à partir du classement fort/modéré/faible fourni.
 
     Args:
         matieres_preferees: Les matières que l'utilisateur préfère.
@@ -530,22 +543,27 @@ def expliquer_recommandation_ml(
             "expliquer une recommandation. Demande à l'utilisateur ses "
             "matières, compétences ou centres d'intérêt d'abord."
         )
-    lines = [
-        f"- {c['label']} : contribution {c['contribution']:+.2f} "
-        f"(poids appris par le modèle : {c['poids_appris']:+.2f})"
-        for c in explanation["contributions"]
-    ]
+    max_positive = max((c["contribution"] for c in explanation["contributions"] if c["contribution"] > 0), default=0.0)
+
+    def _qualitative(contribution: float) -> str:
+        if contribution <= 0:
+            return "joue en défaveur de ce domaine"
+        if max_positive and contribution >= 0.66 * max_positive:
+            return "pèse fortement en faveur de ce domaine"
+        if max_positive and contribution >= 0.33 * max_positive:
+            return "pèse modérément en faveur de ce domaine"
+        return "pèse un peu en faveur de ce domaine"
+
+    lines = [f"- {c['label']} : {_qualitative(c['contribution'])}" for c in explanation["contributions"]]
     return (
-        f"[Résultat du modèle ML ORIENT'IA] Pour le domaine « "
-        f"{explanation['label']} » (score : {explanation['score']:.2f}), "
-        "voici les éléments déclarés par l'utilisateur qui pèsent le plus "
-        "dans ce score, du plus au moins déterminant :\n" + "\n".join(lines) +
-        f"\n(biais de base du modèle pour ce domaine, indépendant du "
-        f"profil : {explanation['biais_du_modele']:+.2f}). Une contribution "
-        "positive pousse vers ce domaine, une contribution négative "
-        "l'éloigne. Seuls les éléments explicitement déclarés par "
-        "l'utilisateur apparaissent ici — jamais un trait de personnalité "
-        "inféré."
+        f"[Résultat du modèle ML ORIENT'IA — NE MENTIONNE AUCUN chiffre "
+        f"(ni score, ni poids) à l'utilisateur : reformule uniquement à "
+        f"partir des qualificatifs fort/modéré/faible ci-dessous] Pour le "
+        f"domaine « {explanation['label']} », voici les éléments déclarés "
+        "par l'utilisateur qui expliquent ce résultat, du plus au moins "
+        "déterminant :\n" + "\n".join(lines) +
+        "\nSeuls les éléments explicitement déclarés par l'utilisateur "
+        "apparaissent ici — jamais un trait de personnalité inféré."
     )
 
 

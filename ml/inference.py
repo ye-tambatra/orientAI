@@ -52,23 +52,65 @@ class OrientationModel:
         self.classes = data["classes"]
         self.model = model_from_dict(data["model"])
 
+    @staticmethod
+    def _confidence_label(proba: np.ndarray) -> str:
+        """Qualitative confidence from the shape of the whole distribution,
+        not just the raw top-1 probability: a "nette" recommendation needs
+        both a decent absolute score AND a clear lead over the runner-up —
+        15 near-tied domains at ~7% each is not the same situation as one
+        domain at 25% with everything else far behind, even though neither
+        looks dramatic as a raw float. Kept out of user-facing text (only
+        this label is shown, never the float) per product decision: a
+        lycéen reading "0.31" learns nothing a jargon-free sentence
+        wouldn't say better."""
+        top1, top2 = float(proba[0]), float(proba[1]) if len(proba) > 1 else 0.0
+        gap = top1 - top2
+        if top1 >= 0.25 and gap >= 0.15:
+            return "nette"
+        if gap >= 0.07:
+            return "moderee"
+        return "incertaine"
+
+    def _reason_phrase(self, profile: dict, domaine_id: str) -> str:
+        """Natural-language cause for a domain's score, built from the same
+        per-feature contributions as expliquer_recommandation — the
+        declared elements that actually pushed the score up — but as a
+        sentence fragment instead of a number, for use in the main
+        recommendation flow (analyser_profil_ml) where showing a raw score
+        was replaced by an explained reason instead."""
+        explanation = self.expliquer_recommandation(profile, domaine_id=domaine_id, top_n=4)
+        positives = [c["label"] for c in explanation["contributions"] if c["contribution"] > 0]
+        if not positives:
+            return "peu d'éléments de ton profil vont clairement dans ce sens pour l'instant"
+        return "tu as mentionné : " + ", ".join(positives)
+
     def rank_domaines(self, profile: dict, k: int = 3) -> list[dict]:
         """Returns the top-k orientation domains ranked by predicted
-        adequacy, each with a 0-1 score and its looked-up candidate ISPM
-        filières. This is `classer_parcours` / `analyser_profil` from the
-        brief's example tool list, generalised to a domain rather than a
-        single ISPM filière."""
+        adequacy, each with a qualitative confidence label, a natural-
+        language reason grounded in the declared features, and the
+        looked-up candidate ISPM filières. This is `classer_parcours` /
+        `analyser_profil` from the brief's example tool list, generalised
+        to a domain rather than a single ISPM filière.
+
+        `score` is kept in the dict for observability/debugging (visible
+        in the conversational agent's "steps" trace) but is NOT meant to
+        reach the user-facing chat reply as a raw number — see
+        `_confidence_label` and `_reason_phrase`.
+        """
         x = encode_profile(profile).reshape(1, -1)
         proba = self.model.predict_proba(x)[0]
-        order = np.argsort(-proba)[:k]
+        order = np.argsort(-proba)
+        confiance = self._confidence_label(proba[order])
         return [
             {
                 "domaine": self.classes[i],
                 "label": DOMAINES[self.classes[i]].label,
                 "score": round(float(proba[i]), 4),
+                "confiance": confiance if rank == 0 else None,
+                "raison": self._reason_phrase(profile, self.classes[i]),
                 "filieres_ispm_correspondantes": list(DOMAINES[self.classes[i]].ispm_filieres),
             }
-            for i in order
+            for rank, i in enumerate(order[:k])
         ]
 
     def score_adequation(self, profile: dict, domaine_id: str) -> dict:
@@ -78,12 +120,15 @@ class OrientationModel:
             return {"error": f"Domaine inconnu : {domaine_id!r}. Domaines valides : {sorted(DOMAINES)}"}
         x = encode_profile(profile).reshape(1, -1)
         proba = self.model.predict_proba(x)[0]
+        order = np.argsort(-proba)
         class_index = self.classes.index(domaine_id)
-        rank = int(np.argsort(-proba).tolist().index(class_index)) + 1
+        rank = int(order.tolist().index(class_index)) + 1
         return {
             "domaine": domaine_id,
             "label": DOMAINES[domaine_id].label,
             "score": round(float(proba[class_index]), 4),
+            "confiance": self._confidence_label(proba[order]) if rank == 1 else "moderee" if rank <= 3 else "faible",
+            "raison": self._reason_phrase(profile, domaine_id),
             "rang_parmi_domaines": rank,
             "nb_domaines": len(self.classes),
             "filieres_ispm_correspondantes": list(DOMAINES[domaine_id].ispm_filieres),
