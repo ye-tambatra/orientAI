@@ -15,8 +15,9 @@ import os
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from llm.agent import ConversationManager
@@ -41,6 +42,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/api/files", StaticFiles(directory="data/sources"), name="files")
 
 manager = ConversationManager()
 
@@ -76,9 +79,15 @@ def health() -> dict[str, str]:
 
 
 @app.post("/api/chat")
-def chat(request: ChatRequest) -> ChatResponse:
+def chat(request_ctx: Request, request: ChatRequest) -> ChatResponse:
     session = manager.get_or_create(request.session_id)
     reply, sources, steps = session.send(request.message)
+    
+    for s in sources:
+        if not s.get("url") and s.get("file"):
+            filename = os.path.basename(s["file"])
+            s["url"] = f"{str(request_ctx.base_url).rstrip('/')}/api/files/{filename}"
+            
     return ChatResponse(
         reply=reply,
         sources=[Source(**s) for s in sources],
