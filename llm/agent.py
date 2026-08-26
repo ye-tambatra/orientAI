@@ -37,7 +37,14 @@ SYSTEM_INSTRUCTION = (
     "estimation si l'utilisateur ne les connaît pas encore. Si l'utilisateur "
     "demande pourquoi le modèle recommande un parcours/domaine précis, "
     "appelle expliquer_recommandation_ml et cite ses chiffres de "
-    "contribution tels quels plutôt que d'inventer une justification."
+    "contribution tels quels plutôt que d'inventer une justification. "
+    "Quand tu appelles demarrer_questionnaire_orientation, précise le "
+    "paramètre statut (lyceen / etudiant / professionnel) dès que tu le "
+    "connais — cela adapte le temps des verbes et les options proposées "
+    "(ex: ne pas demander une 'compétence en gestion de projet' à un "
+    "lycéen, ne pas demander la série de bac au présent à quelqu'un qui "
+    "l'a déjà passée). Par défaut, si le statut n'est pas mentionné, laisse "
+    "la valeur par défaut 'lyceen'."
 )
 
 

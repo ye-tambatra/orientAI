@@ -10,6 +10,7 @@ appending it to TOOLS.
 import datetime
 
 from ml.inference import ModelNotTrainedError, get_model
+from ml.vocab import SERIES_BAC
 from rag.retriever import retrieve_context
 
 
@@ -239,12 +240,56 @@ def analyser_profil_ml(
     )
 
 
+# Option lists sourced from ml.vocab so the questionnaire and the model's
+# actual vocabulary can never silently drift apart (this already caught a
+# real bug once: "Autre" was missing here even though it's a valid
+# ml.vocab.SERIES_BAC value).
+_ENVIRONNEMENT_OPTION_LABELS = {
+    "bureau": "Bureau",
+    "atelier": "Atelier",
+    "laboratoire": "Laboratoire",
+    "terrain": "Terrain / Plein air",
+    "contact_client": "Contact clientèle",
+}
+
+# Wording adapts to who is answering (brief section 5 already distinguishes
+# lycéens/étudiants from professionnels for the same reason): a bac-holder
+# or a professional shouldn't be asked about their series "au lycée" in the
+# present/future tense as if they hadn't chosen it yet.
+_STATUTS = ("lyceen", "etudiant", "professionnel")
+
+_MATIERE_LABELS = {
+    "lyceen": "Quelle est votre matière préférée au lycée ?",
+    "etudiant": "Quelle matière avez-vous préférée pendant vos études ?",
+    "professionnel": "Quelle matière avez-vous préférée durant votre scolarité ?",
+}
+_SERIE_BAC_LABELS = {
+    "lyceen": "Quelle série de bac avez-vous choisie (ou envisagez-vous de choisir) ?",
+    "etudiant": "Quelle série de bac avez-vous obtenue ?",
+    "professionnel": "Quelle série de bac aviez-vous obtenue ?",
+}
+_COMPETENCE_LABELS = {
+    "lyceen": "Quelle compétence penses-tu développer le plus facilement ?",
+    "etudiant": "Quelle compétence avez-vous le plus développée jusqu'ici ?",
+    "professionnel": "Quelle est votre compétence la plus forte aujourd'hui ?",
+}
+# "Gestion de projet" présuppose une expérience professionnelle qu'un
+# lycéen n'a généralement pas encore — remplacée par une option plus
+# accessible pour ce statut.
+_COMPETENCE_OPTIONS = {
+    "lyceen": ["Programmation", "Analyse de données", "Communication", "Créativité", "Travail en équipe"],
+    "etudiant": ["Programmation", "Analyse de données", "Communication", "Gestion de projet", "Créativité"],
+    "professionnel": ["Programmation", "Analyse de données", "Communication", "Gestion de projet", "Créativité"],
+}
+
+
 def demarrer_questionnaire_orientation(
     matiere_preferee: str = "",
     environnement_prefere: str = "",
     motivation_principale: str = "",
     competence_principale: str = "",
     serie_bac: str = "",
+    statut: str = "lyceen",
 ) -> str:
     """Déclenche l'affichage d'un questionnaire interactif sur l'interface utilisateur pour recueillir ses préférences.
 
@@ -255,25 +300,36 @@ def demarrer_questionnaire_orientation(
 
     Args:
         matiere_preferee: La matière préférée au lycée si l'utilisateur l'a mentionnée (ex: Mathématiques, Physique-Chimie, SVT, Français).
-        environnement_prefere: L'environnement de travail préféré (ex: Bureau, Atelier/Terrain, Laboratoire, Contact clientèle, Télétravail).
+        environnement_prefere: L'environnement de travail préféré (ex: Bureau, Atelier, Laboratoire, Terrain, Contact clientèle).
         motivation_principale: Ce qui motive le plus l'utilisateur (ex: La technologie, Aider les autres, L'art et la création, Les affaires).
-        competence_principale: La compétence que l'utilisateur reconnaît comme la sienne (ex: Programmation, Analyse de données, Communication, Gestion de projet).
+        competence_principale: La compétence que l'utilisateur reconnaît comme la sienne (ex: Programmation, Analyse de données, Communication).
         serie_bac: La série de bac (choisie ou envisagée) si l'utilisateur l'a mentionnée (ex: S, D, C, A, L, Technique).
+        statut: Le statut de l'utilisateur si connu — "lyceen" (encore au
+            lycée ou vient de passer le bac), "etudiant" (déjà dans
+            l'enseignement supérieur) ou "professionnel" (déjà en activité,
+            envisage une reconversion). Adapte le libellé des questions
+            (temps des verbes, pertinence des options) : ne demande pas à
+            un professionnel sa "matière préférée au lycée" au présent, et
+            n'attends pas d'un lycéen qu'il ait une "compétence en gestion
+            de projet". Par défaut "lyceen" (public majoritaire d'ORIENT'IA)
+            si le statut n'a pas été précisé par l'utilisateur.
     """
     import json
+
+    statut = statut if statut in _STATUTS else "lyceen"
 
     questions = []
     if not matiere_preferee:
         questions.append({
             "id": "matiere_preferee",
-            "label": "Quelle est votre matière préférée au lycée ?",
+            "label": _MATIERE_LABELS[statut],
             "options": ["Mathématiques", "Physique-Chimie", "SVT", "Français", "Anglais"]
         })
     if not environnement_prefere:
         questions.append({
             "id": "environnement_prefere",
             "label": "Quel type d'environnement de travail préférez-vous ?",
-            "options": ["Bureau", "Atelier / Terrain", "Laboratoire", "Contact clientèle", "Télétravail"]
+            "options": list(_ENVIRONNEMENT_OPTION_LABELS.values())
         })
     if not motivation_principale:
         questions.append({
@@ -284,14 +340,14 @@ def demarrer_questionnaire_orientation(
     if not competence_principale:
         questions.append({
             "id": "competence_principale",
-            "label": "Quelle compétence vous reconnaissez-vous le plus ?",
-            "options": ["Programmation", "Analyse de données", "Communication", "Gestion de projet", "Créativité"]
+            "label": _COMPETENCE_LABELS[statut],
+            "options": _COMPETENCE_OPTIONS[statut]
         })
     if not serie_bac:
         questions.append({
             "id": "serie_bac",
-            "label": "Quelle série de bac avez-vous choisie (ou envisagez-vous) ?",
-            "options": ["S", "D", "C", "A", "L", "Technique"]
+            "label": _SERIE_BAC_LABELS[statut],
+            "options": list(SERIES_BAC)
         })
 
     return json.dumps({
