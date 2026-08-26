@@ -62,59 +62,80 @@ export default function ChatPage() {
           </Typography>
         )}
 
-        {messages.map((message) => (
-          <Stack
-            key={message.id}
-            spacing={0.5}
-            sx={{ alignItems: message.role === 'user' ? 'flex-end' : 'flex-start' }}
-          >
-            <Stack direction="row" spacing={1}>
-              {message.role === 'assistant' && (
-                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
-                  <SmartToyIcon fontSize="small" />
-                </Avatar>
-              )}
-              <Paper
-                variant="outlined"
+        {messages.map((message) => {
+          const isUser = message.role === 'user'
+          return (
+            <Box
+              key={message.id}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: isUser ? 'flex-end' : 'flex-start',
+                width: '100%',
+                mb: 2,
+              }}
+            >
+              <Box
                 sx={{
-                  p: 1.5,
-                  maxWidth: '75%',
-                  bgcolor: message.role === 'user' ? 'primary.main' : 'background.paper',
-                  color: message.role === 'user' ? 'primary.contrastText' : 'text.primary',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  maxWidth: '85%',
+                  gap: 1,
                 }}
               >
-                <Box
-                  sx={{
-                    whiteSpace: 'normal',
-                    '& p': { m: 0, '&:not(:last-child)': { mb: 1 } },
-                    '& a': { color: 'inherit', textDecoration: 'underline' },
-                  }}
-                >
-                  <ReactMarkdown>
-                    {message.content}
-                  </ReactMarkdown>
+                {!isUser && (
+                  <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, flexShrink: 0 }}>
+                    <SmartToyIcon fontSize="small" />
+                  </Avatar>
+                )}
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0 }}>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 1.5,
+                      bgcolor: isUser ? 'primary.main' : 'background.paper',
+                      color: isUser ? 'primary.contrastText' : 'text.primary',
+                      borderRadius: 2,
+                      borderTopRightRadius: isUser ? 0 : 2,
+                      borderTopLeftRadius: !isUser ? 0 : 2,
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        whiteSpace: 'normal',
+                        '& p': { m: 0, '&:not(:last-child)': { mb: 1 } },
+                        '& a': { color: 'inherit', textDecoration: 'underline' },
+                      }}
+                    >
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    </Box>
+                  </Paper>
+
+                  {message.steps && message.steps.length > 0 && (
+                    <Box sx={{ width: '100%' }}>
+                      <StepsAccordion steps={message.steps} />
+                    </Box>
+                  )}
+
+                  {message.sources && message.sources.length > 0 && (
+                    <Box sx={{ width: '100%', mt: 0.5 }}>
+                      <SourcesList sources={message.sources} />
+                    </Box>
+                  )}
                 </Box>
-              </Paper>
-              {message.role === 'user' && (
-                <Avatar sx={{ bgcolor: 'grey.500', width: 32, height: 32 }}>
-                  <PersonIcon fontSize="small" />
-                </Avatar>
-              )}
-            </Stack>
 
-            {message.steps && message.steps.length > 0 && (
-              <Box sx={{ pl: message.role === 'assistant' ? 5 : 0, maxWidth: '75%' }}>
-                <StepsAccordion steps={message.steps} />
+                {isUser && (
+                  <Avatar sx={{ bgcolor: 'grey.500', width: 32, height: 32, flexShrink: 0 }}>
+                    <PersonIcon fontSize="small" />
+                  </Avatar>
+                )}
               </Box>
-            )}
-
-            {message.sources && message.sources.length > 0 && (
-              <Box sx={{ pl: message.role === 'assistant' ? 5 : 0 }}>
-                <SourcesList sources={message.sources} />
-              </Box>
-            )}
-          </Stack>
-        ))}
+            </Box>
+          )
+        })}
 
         {isSending && (
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
