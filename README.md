@@ -2,6 +2,13 @@
 
 OrientIA est un projet d'agent conversationnel basé sur l'Intelligence Artificielle (RAG), conçu pour fournir des informations et aider à l'orientation des utilisateurs.
 
+## Vidéo de démonstration
+
+[Voir la vidéo de démonstration](https://drive.google.com/file/d/12yoxKNie8u4PYCJIThDum51ovdRcmM_L/view?usp=sharing)
+
+*Non hébergée dans ce dépôt : le fichier (`videoTpClinique.mp4`, ~169 Mo) dépasse la
+limite de 100 Mo de GitHub sans Git LFS.*
+
 ## Équipe du Projet
 
 Nous sommes une équipe de 6 personnes réparties sur trois pôles d'expertise :
@@ -16,6 +23,7 @@ Nous sommes une équipe de 6 personnes réparties sur trois pôles d'expertise :
   - *Mission* : Création des agents conversationnels intelligents avec gestion de la mémoire contextuelle (historique des discussions). Conception du système RAG incluant la collecte, le traitement et l'indexation de documents issus de sources variées (sites web, brochures). Configuration du système de "Tool calling" (appels de fonctions) pour permettre à l'IA d'interagir dynamiquement avec la base de connaissances.
   - *Membres* :
     - NOFINIAINA NATOLOJANAHARY Tambatra Namelantsoa  - IGGLIA5 - N 03
+    - RAZAFINDRALAMBO MARIPITIA Lafatriniaina  - IGGLIA5 - N 32
     
 
 - **Intégration (Frontend & Backend API)** :
@@ -119,3 +127,11 @@ Ouvrez un **nouveau terminal**, et naviguez dans le dossier `client` depuis la r
 
 ## Utilisation
 Une fois le backend et le frontend démarrés en parallèle (chacun dans son terminal), ouvrez simplement l'URL locale fournie par Vite (par exemple `http://localhost:5173`) dans votre navigateur pour commencer à discuter avec l'agent OrientIA.
+
+## Vidéo de démonstration
+
+<!-- TODO: remplacer par le lien une fois la vidéo hébergée (YouTube, Drive...) -->
+[Voir la vidéo de démonstration](LIEN_A_COMPLETER)
+
+*Non hébergée dans ce dépôt : le fichier (`videoTpClinique.mp4`, ~169 Mo) dépasse la
+limite de 100 Mo de GitHub sans Git LFS.*

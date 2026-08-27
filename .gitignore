@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 rag/chroma_db/
 .env
+
+# Vidéo de démo (169 Mo) : dépasse la limite GitHub de 100 Mo sans Git LFS,
+# hébergée ailleurs — voir le lien dans README.md.
+*.mp4
