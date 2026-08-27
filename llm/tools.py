@@ -43,7 +43,7 @@ def rechercher_formation(mot_cle: str) -> str:
         mot_cle: Le thème, domaine ou nom de filière recherché.
     """
     query = f"Filière ou formation en rapport avec {mot_cle} à l'ISPM"
-    return retrieve_context(query, n_results=4)
+    return retrieve_context(query, n_results=20)
 
 
 def verifier_prerequis(filiere: str, serie_bac: str = "") -> str:
@@ -60,7 +60,7 @@ def verifier_prerequis(filiere: str, serie_bac: str = "") -> str:
     query = f"Conditions d'admission et prérequis pour la filière {filiere}"
     if serie_bac:
         query += f" pour un baccalauréat série {serie_bac}"
-    return retrieve_context(query, n_results=3)
+    return retrieve_context(query, n_results=20)
 
 
 def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
@@ -74,10 +74,10 @@ def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
         filiere_b: Le nom ou sigle de la deuxième filière.
     """
     contexte_a = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_a}", n_results=3
+        f"Présentation et parcours de la filière {filiere_a}", n_results=20
     )
     contexte_b = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_b}", n_results=3
+        f"Présentation et parcours de la filière {filiere_b}", n_results=20
     )
     return (
         f"== {filiere_a} ==\n{contexte_a}\n\n"
@@ -98,7 +98,7 @@ def rechercher_competences(filiere: str) -> str:
         f"Liste des matières et compétences enseignées en première année "
         f"de la filière {filiere}"
     )
-    return retrieve_context(query, n_results=3)
+    return retrieve_context(query, n_results=20)
 
 
 def expliquer_recommandation(filiere: str, raison: str = "") -> str:
@@ -117,7 +117,7 @@ def expliquer_recommandation(filiere: str, raison: str = "") -> str:
     query = f"Pourquoi choisir la filière {filiere} : présentation, compétences et objectifs"
     if raison:
         query += f", en lien avec {raison}"
-    return retrieve_context(query, n_results=4)
+    return retrieve_context(query, n_results=20)
 
 
 def identifier_debouches(filiere: str) -> str:
@@ -386,7 +386,7 @@ def obtenir_informations_ispm() -> str:
     l'institut (historique court, localisation).
     """
     query = "Informations générales sur l'ISPM, contact, adresse, téléphone, email"
-    return retrieve_context(query, n_results=4)
+    return retrieve_context(query, n_results=20)
 
 
 def calculer_score_adequation(
