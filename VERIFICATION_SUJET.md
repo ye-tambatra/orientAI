@@ -152,18 +152,21 @@ Testé en direct (voir aussi section 1) :
   ("tu as mentionné : Mathématiques...", `ml/inference.py:_reason_phrase`).
 - **Traçable** : ✅ `llm/agent.py:_extract_steps`/`_extract_sources` exposent les outils
   appelés, leurs arguments, leurs résultats, et les sources RAG citées avec URL.
-- **Prudente : ⚠️ tension réelle à signaler.** Un changement récent de ce projet, fait à
-  la demande explicite de l'utilisateur, interdit désormais à l'agent d'employer le mot
-  "incertain" ou toute formulation hésitante ("difficile de trancher") — voir
-  `llm/agent.py` (SYSTEM_INSTRUCTION) et `llm/tools.py`
-  (`analyser_profil_ml`/`calculer_score_adequation`). Le disclaimer ("pas une décision
-  officielle") reste présent partout, mais la **reconnaissance explicite de
-  l'incertitude quand les scores sont proches a été retirée** au profit d'une réponse
-  toujours confiante (avec alternatives justifiées). Ceci entre directement en tension
-  avec le sujet, qui exige explicitement (section 9) : *"reconnaître l'incertitude"*
-  comme capacité de l'assistant, et (Critère directeur) un système *"conscient de ses
-  limites"*. Ce n'est pas un bug caché : c'est une décision produit assumée, mais le jury
-  pourrait la questionner directement (la section "Démonstration finale" teste "Quelles
+- **Prudente : ✅ tension résolue (27/08/2026).** L'interdiction générale et
+  systématique du mot "incertain" a été remplacée par un signal MESURÉ : le modèle
+  calcule désormais un écart réel entre le domaine n°1 et le n°2 (`ml/inference.py`,
+  `AMBIGUITY_GAP_THRESHOLD`, champ `ambiguite_profil` sur `rank_domaines` et
+  `score_adequation`). `llm/tools.py` (`analyser_profil_ml`/`calculer_score_adequation`)
+  et `llm/agent.py` (SYSTEM_INSTRUCTION) instruisent maintenant l'agent à suivre ce
+  signal à la lettre : confiant sans réserve quand un domaine se détache clairement,
+  honnête et concret sur l'ambiguïté quand le signal le dit vraiment (jamais de
+  hedging vague et systématique sans cause). Testé en conditions réelles : un profil
+  clair (maths/info/programmation) → "NON ambigu", présenté directement ; un profil
+  vide → "AMBIGU", reconnu honnêtement au lieu d'être forcé vers une fausse confiance.
+  Ceci répond directement au sujet (section 9 : *"reconnaître l'incertitude"* ; Critère
+  directeur : système *"conscient de ses limites"*) sans revenir au hedging vague que
+  l'utilisateur avait initialement fait retirer — l'incertitude n'est signalée que
+  quand un chiffre réel la justifie. (La section "Démonstration finale" teste "Quelles
   informations te manquent pour rendre cette recommandation fiable ?" — réponse testée
   plus bas, section 16).
 
@@ -381,13 +384,13 @@ dans la note de limites plutôt qu'à considérer comme un défaut corrigible.
 | Citer les sources pédagogiques | ✅ | `parse_sources`/`RAG_TOOL_NAMES`, testé avec URLs réelles |
 | Appeler le modèle de ML | ✅ | Testé à plusieurs reprises dans cette conversation |
 | Poser des questions si info manque | ✅ | Testé (section 1) |
-| **Reconnaître l'incertitude** | ❌ | **Contredit explicitement** — voir section 2 ci-dessus : le mot "incertain" et toute formulation hésitante sont désormais interdits par consigne produit |
+| **Reconnaître l'incertitude** | ✅ | Corrigé (27/08/2026) — voir section 2 ci-dessus : signal mesuré (`ambiguite_profil`, écart top1/top2), l'agent reconnaît l'incertitude quand le signal le justifie réellement, sans hedging vague systématique |
 | Refuser d'inventer une formation/règle | ✅ | Testé en direct (section 16 ci-dessous) |
-| Orienter vers l'administration pour décision officielle | ❌ | Aucune mention de "administration" ou "conseiller pédagogique" trouvée dans `llm/agent.py`/`llm/tools.py` (grep vérifié) |
+| Orienter vers l'administration pour décision officielle | ⚠️ | Partiel : `rechercher_passerelles` (section 3) redirige explicitement vers l'administration pour toute question de réorientation, mais c'est le seul outil à le faire — aucune redirection générale vers "l'administration"/"un conseiller pédagogique" pour d'autres décisions officielles (admissions, etc.) |
 
-**Verdict : 9/11 conformes, 2 non conformes** — tous deux liés à la prudence/l'humilité du
-système, qui est justement ce que le "Critère directeur" final du sujet met le plus en
-avant.
+**Verdict : 10/11 conformes, 1 partiel** — la redirection vers l'administration existe
+maintenant pour un cas (passerelles) mais reste à généraliser à d'autres décisions
+officielles (ex: admissions) si le temps le permet.
 
 ---
 
@@ -576,20 +579,19 @@ manques identifiés ci-dessus :
 
 | Critère du jury | Verdict de cette vérification |
 |---|---|
-| Fondé sur des données traçables | ⚠️ Globalement oui, avec une incohérence trouvée (SRC003) |
+| Fondé sur des données traçables | ✅ Incohérence SRC003 corrigée (27/08/2026) ; nouvelles données dérivées (SRC005-SRC007) toutes honnêtement typées "non officiel" |
 | Scientifiquement évalué | ⚠️ Oui pour le ML, non pour le reste du système |
 | Capable de justifier ses recommandations | ✅ Bien couvert (raisons chiffrées en interne, reformulées) |
-| **Conscient de ses limites** | ❌ **Contredit par la consigne "jamais incertain"** (section 2/9) |
+| **Conscient de ses limites** | ✅ Corrigé (27/08/2026) — signal d'ambiguïté mesuré (`ambiguite_profil`), reconnu quand réellement justifié (section 2/9) |
 | Suffisamment observable pour être analysé | ⚠️ Traces solides mais incomplètes (pas de scores de recherche ni de temps d'exécution) |
-| Suffisamment robuste (hypothèse ≠ décision pédagogique) | ⚠️ Bons refus testés (injection, discrimination, profilage), mais pas d'orientation vers l'administration, et la mention obligatoire d'interface est absente |
+| Suffisamment robuste (hypothèse ≠ décision pédagogique) | ⚠️ Bons refus testés (injection, discrimination, profilage) ; orientation vers l'administration désormais partielle (`rechercher_passerelles`), mais la mention obligatoire d'interface est encore absente |
 
-### Les 3 chantiers prioritaires identifiés par cette vérification
+### Chantiers prioritaires restants
 
 1. **Le protocole d'évaluation système complet (32 cas de test) est le trou le plus
    lourd au barème** — 14 points directement concernés, rien n'existe encore.
-2. **La tension "jamais incertain" vs "reconnaître l'incertitude"** est une décision
-   produit qui contredit un critère explicite et central du sujet — à trancher
-   consciemment avant la démo, pas à découvrir devant le jury.
+2. ~~La tension "jamais incertain" vs "reconnaître l'incertitude"~~ — **résolue**
+   (27/08/2026) par un signal mesuré plutôt qu'une interdiction générale.
 3. **Trois livrables manquants et faciles à produire** : README.md racine, schéma
    d'architecture, mention obligatoire d'interface — aucun ne nécessite de nouveau
    développement, seulement de la rédaction.

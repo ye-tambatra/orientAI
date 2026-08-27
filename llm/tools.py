@@ -279,13 +279,28 @@ def analyser_profil_ml(
         f"{', '.join(r['filieres_ispm_correspondantes'])} (raison : {r['raison']})"
         for i, r in enumerate(ranking)
     ]
+    ambigu = ranking[0]["ambiguite_profil"]
+    consigne_ambiguite = (
+        "Signal du modèle : AMBIGU — le domaine n°1 et le n°2 sont "
+        "statistiquement trop proches pour trancher avec ce profil. Dis-le "
+        "explicitement et concrètement à l'utilisateur (ex: \"avec ce que "
+        "tu m'as dit, {A} et {B} se valent à peu près, difficile de "
+        "départager les deux pour l'instant\") puis demande PRÉCISÉMENT "
+        "l'information manquante la plus utile (compétence, série de bac "
+        "ou environnement de travail non encore fournis) pour départager. "
+        "Ce n'est pas une formule de politesse : ne le dis QUE parce que ce "
+        "signal est vrai."
+        if ambigu else
+        "Signal du modèle : NON ambigu — un domaine se détache "
+        "clairement des autres pour ce profil. Présente-le directement, "
+        "avec sa raison, sans ajouter de doute ou de réserve non justifiée."
+    )
     return (
         "[Résultat du modèle ML ORIENT'IA — classement statistique par "
         "domaine d'orientation, pas une décision officielle. NE MENTIONNE "
-        "AUCUN score numérique à l'utilisateur et n'emploie JAMAIS le mot "
-        "\"incertain\" : présente toujours le domaine en tête avec la "
-        "raison donnée, comme une piste concrète et argumentée] D'après le "
-        "profil déclaré, les domaines les plus compatibles sont :\n" +
+        f"AUCUN score numérique à l'utilisateur. {consigne_ambiguite}] "
+        "D'après le profil déclaré, les domaines les plus compatibles "
+        "sont :\n" +
         "\n".join(lines) +
         "\nCette raison reflète uniquement les matières/compétences/intérêts "
         "explicitement déclarés par l'utilisateur — jamais un trait de "
@@ -485,11 +500,22 @@ def calculer_score_adequation(
     result = model.score_adequation(profile, domaine)
     if "error" in result:
         return f"[Modèle ML] {result['error']}"
+    consigne_ambiguite = (
+        "Signal du modèle : AMBIGU — un autre domaine est statistiquement "
+        "presque à égalité avec celui-ci pour ce profil. Dis-le "
+        "explicitement (ex: \"ce domaine se défend, mais un autre te va "
+        "presque aussi bien avec ce que tu m'as dit\") plutôt que de "
+        "présenter ce score comme définitif, et demande l'information "
+        "manquante la plus utile pour départager."
+        if result["ambiguite_profil"] else
+        "Signal du modèle : NON ambigu pour ce profil — présente le "
+        "résultat directement, sans réserve non justifiée."
+    )
     return (
         f"[Résultat du modèle ML ORIENT'IA — NE MENTIONNE AUCUN score "
-        f"numérique à l'utilisateur et n'emploie JAMAIS le mot \"incertain\" "
-        f": reformule uniquement avec la raison ci-dessous, présentée comme "
-        f"une piste concrète] Adéquation avec le domaine « {result['label']} "
+        f"numérique à l'utilisateur : reformule uniquement avec la raison "
+        f"ci-dessous, présentée comme une piste concrète. {consigne_ambiguite}] "
+        f"Adéquation avec le domaine « {result['label']} "
         f"» (se classe {result['rang_parmi_domaines']}e sur "
         f"{result['nb_domaines']} pour ce profil), raison : "
         f"{result['raison']}. Filières ISPM correspondantes à explorer : "
