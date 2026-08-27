@@ -73,5 +73,20 @@
       "competences_deduites"
     ],
     "limitations": "N'est PAS une donnée officielle ISPM — c'est une inférence de l'équipe à partir des matières, à ne jamais présenter à l'utilisateur comme un fait certifié par l'ISPM. Reproductible via `python -m data_processing.derive_competences`."
+  },
+  {
+    "id": "SRC006",
+    "title": "Relations compétences → métiers et parcours → métiers (indicatif)",
+    "type": "derived",
+    "file": "data/structured/relations_competences_metiers.md",
+    "url": null,
+    "status": "interne (dérivé, non officiel)",
+    "consulted_at": "2026-08-27",
+    "description": "Chaîne deux inférences : compétences déduites (SRC005) → métiers typiques (table générique de métiers francophones), puis parcours → métiers par transitivité. Généré par data_processing/derive_relations.py.",
+    "extracted_data": [
+      "competences_vers_metiers",
+      "parcours_vers_metiers_indicatif"
+    ],
+    "limitations": "Double inférence (matière→compétence→métier), donc encore plus éloignée d'un fait vérifié que SRC005. La table compétence→métier est une connaissance générale des intitulés de métiers francophones, sans lien spécifique établi avec Madagascar ou l'ISPM. À présenter comme piste indicative à vérifier, jamais comme débouché confirmé. Reproductible via `python -m data_processing.derive_relations`."
   }
 ]

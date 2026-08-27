@@ -133,19 +133,24 @@ def expliquer_recommandation(filiere: str, raison: str = "") -> str:
 def identifier_debouches(filiere: str) -> str:
     """Cherche les débouchés professionnels/perspectives de carrière d'une filière.
 
-    Le corpus ISPM n'a pas de page dédiée aux débouchés : quand ils existent,
-    ils apparaissent en une phrase incidente dans le texte de présentation de
-    CERTAINES filières seulement (ex: ISAIA, DTJA, EMII, TEE). La plupart des
-    autres filières n'ont aucune mention explicite de débouchés dans le
-    corpus.
+    Le corpus ISPM n'a pas de page dédiée aux débouchés officiels : quand ils
+    existent, ils apparaissent en une phrase incidente dans le texte de
+    présentation de CERTAINES filières seulement (ex: ISAIA, DTJA, EMII,
+    TEE) — traite ceci comme la seule source à peu près officielle.
 
-    Ne présente JAMAIS un débouché qui n'est pas écrit noir sur blanc dans le
-    passage retourné, et ne le déduis pas du nom ou de l'objectif général de
-    la filière. Si le passage ne contient aucune phrase concrète sur les
-    secteurs/métiers/employeurs de CETTE filière précise, dis honnêtement à
-    l'utilisateur que cette information n'est pas disponible dans la base de
-    connaissances pour cette filière, plutôt que d'inventer ou de généraliser
-    à partir de filières voisines.
+    Le passage retourné contient aussi des "métiers indicatifs" DÉDUITS
+    (double inférence matière→compétence→métier, voir
+    data/structured/relations_competences_metiers.md), marqués comme tels
+    dans le texte. Ces métiers ne sont PAS des débouchés confirmés par
+    l'ISPM : présente-les uniquement comme des pistes à vérifier auprès de
+    l'ISPM, jamais au même niveau de confiance qu'une phrase officielle.
+
+    Ne présente JAMAIS un débouché ou un métier comme confirmé s'il n'est
+    pas écrit noir sur blanc dans le passage retourné. Si le passage ne
+    contient ni phrase officielle ni métier déduit pour CETTE filière
+    précise, dis honnêtement à l'utilisateur que cette information n'est pas
+    disponible, plutôt que d'inventer ou de généraliser à partir de filières
+    voisines.
 
     Args:
         filiere: Le nom ou sigle de la filière concernée.
@@ -154,7 +159,7 @@ def identifier_debouches(filiere: str) -> str:
         f"Débouchés professionnels, secteurs d'activité et métiers pour les "
         f"diplômés de la filière {filiere} de l'ISPM"
     )
-    return retrieve_context(query, n_results=3)
+    return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
 def _profil_ml_indisponible(detail: str) -> str:

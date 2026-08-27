@@ -30,7 +30,7 @@ def retrieve_context(query: str, n_results: int = 3) -> str:
         meta = results['metadatas'][0][i]
         
         # Extract section header if it exists (useful for context hierarchy)
-        section = meta.get('Header 2', meta.get('Header 1', 'General Section'))
+        section = meta.get('Header 3') or meta.get('Header 2') or meta.get('Header 1') or 'General Section'
         
         # Format the context block with source information for citation purposes
         block = (
@@ -88,7 +88,7 @@ def retrieve_by_keyword(keyword: str, n_results: int = 4) -> str:
 
     context_blocks = []
     for doc, meta in matches[:n_results]:
-        section = meta.get('Header 2', meta.get('Header 1', 'General Section'))
+        section = meta.get('Header 3') or meta.get('Header 2') or meta.get('Header 1') or 'General Section'
         block = (
             f"[Source: {meta['original_file']}, ID: {meta['source_id']}]\n"
             f"Title: {meta['title']} ({section})\n"

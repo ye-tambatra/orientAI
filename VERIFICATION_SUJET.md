@@ -210,17 +210,32 @@ Vérifié dans `data/structured/` :
   le RAG (corrigé le 27/08/2026, voir section 1), mais le corpus lui-même ne couvre
   toujours que 4 des 16 filières (ISAIA, DTJA, EMII, TEE) avec une phrase incidente — ce
   n'est pas une catégorie de données structurée et complète comme le sujet le demande.
-- ❌ Relations compétences/parcours/métiers : aucune donnée structurée de ce type dans
-  le corpus documentaire (seule `ml/domaines.py` a une table domaine→filière, pas
-  compétence→métier).
+- ✅ Relations compétences/parcours/métiers : corrigé (27/08/2026). Même constat que pour
+  les compétences (rien à scraper : aucune page ISPM ne publie ce type de relation).
+  Ajout de `data/structured/relations_competences_metiers.md`
+  (`data_processing/derive_relations.py`, reproductible) : chaîne deux inférences déjà
+  documentées — compétence→métiers (table de métiers francophones génériques) puis
+  parcours→métiers par transitivité via les compétences. Enregistré dans `sources.json`
+  (SRC006, statut "interne (dérivé, non officiel)", limitations explicites sur la double
+  inférence). Branché sur `identifier_debouches` (`llm/tools.py`), qui distingue
+  maintenant explicitement dans son docstring les débouchés officiels (rares, incidents)
+  des métiers indicatifs déduits (à vérifier).
+  **Bug détecté et corrigé pendant le test** : la première version tronquait la liste de
+  métiers par ordre alphabétique des compétences, ce qui coupait systématiquement les
+  compétences en fin d'alphabet avant qu'elles ne contribuent un seul métier (ex: IGGLIA
+  perdait "Développeur logiciel" alors que "Programmation et développement logiciel" est
+  une de ses compétences centrales). Remplacé par un tirage round-robin entre
+  compétences ; revérifié après correction, "Développeur logiciel" apparaît bien pour
+  IGGLIA.
 - ❌ Passerelles entre formations : aucune mention trouvée dans le corpus scrapé.
 
 **Verdict** : le corpus documentaire couvre bien la présentation générale, les matières,
-les prérequis et maintenant les compétences (déduites, clairement non officielles).
-L'outil de débouchés répond désormais honnêtement plutôt que de refuser systématiquement.
-Restent 2 des 8 catégories réellement absentes du corpus réel (relations
-compétences/métiers, passerelles), et les débouchés ne sont couverts que partiellement
-(4/16 filières) faute de contenu source.
+les prérequis, les compétences (déduites) et maintenant les relations
+compétences/parcours/métiers (déduites également, doublement documentées comme non
+officielles). L'outil de débouchés répond désormais honnêtement plutôt que de refuser
+systématiquement. Reste 1 des 8 catégories absente du corpus réel (passerelles entre
+formations), et les débouchés officiels (par opposition aux métiers déduits) ne sont
+couverts que partiellement (4/16 filières) faute de contenu source.
 
 ---
 
