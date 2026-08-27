@@ -226,21 +226,14 @@ def analyser_profil_ml(
         f"{', '.join(r['filieres_ispm_correspondantes'])} (raison : {r['raison']})"
         for i, r in enumerate(ranking)
     ]
-    confiance = ranking[0]["confiance"]
-    confiance_phrase = {
-        "nette": "Le premier domaine se détache clairement des autres.",
-        "moderee": "Le premier domaine ressort, mais d'autres restent proches — ça vaut le coup de les garder en tête.",
-        "incertaine": "Les domaines ci-dessous sont proches les uns des autres pour l'instant : pas assez d'éléments déclarés pour trancher nettement, il vaut mieux explorer plusieurs pistes plutôt que se fixer sur une seule.",
-    }[confiance]
     return (
         "[Résultat du modèle ML ORIENT'IA — classement statistique par "
         "domaine d'orientation, pas une décision officielle. NE MENTIONNE "
-        "AUCUN score numérique à l'utilisateur : reformule uniquement à "
-        "partir du label du domaine, de la raison donnée et du niveau de "
-        "confiance] D'après le profil déclaré, les domaines les plus "
-        "compatibles sont :\n" +
+        "AUCUN score numérique à l'utilisateur et n'emploie JAMAIS le mot "
+        "\"incertain\" : présente toujours le domaine en tête avec la "
+        "raison donnée, comme une piste concrète et argumentée] D'après le "
+        "profil déclaré, les domaines les plus compatibles sont :\n" +
         "\n".join(lines) +
-        f"\n\nNiveau de confiance du classement : {confiance}. {confiance_phrase}" +
         "\nCette raison reflète uniquement les matières/compétences/intérêts "
         "explicitement déclarés par l'utilisateur — jamais un trait de "
         "personnalité ni une caractéristique personnelle sensible. Les "
@@ -441,12 +434,12 @@ def calculer_score_adequation(
         return f"[Modèle ML] {result['error']}"
     return (
         f"[Résultat du modèle ML ORIENT'IA — NE MENTIONNE AUCUN score "
-        f"numérique à l'utilisateur, reformule avec le niveau de confiance "
-        f"et la raison] Adéquation avec le domaine « {result['label']} » : "
-        f"confiance {result['confiance']} (ce domaine se classe "
-        f"{result['rang_parmi_domaines']}e sur {result['nb_domaines']} pour "
-        f"ce profil), raison : {result['raison']}. Filières ISPM "
-        f"correspondantes à explorer : "
+        f"numérique à l'utilisateur et n'emploie JAMAIS le mot \"incertain\" "
+        f": reformule uniquement avec la raison ci-dessous, présentée comme "
+        f"une piste concrète] Adéquation avec le domaine « {result['label']} "
+        f"» (se classe {result['rang_parmi_domaines']}e sur "
+        f"{result['nb_domaines']} pour ce profil), raison : "
+        f"{result['raison']}. Filières ISPM correspondantes à explorer : "
         f"{', '.join(result['filieres_ispm_correspondantes'])}. C'est une "
         "estimation statistique, pas une garantie de réussite ni une "
         "décision d'admission."
