@@ -376,7 +376,7 @@ dans la note de limites plutôt qu'à considérer comme un défaut corrigible.
 
 | Capacité | Statut | Preuve |
 |---|---|---|
-| Recueillir progressivement le profil | ✅ | Questionnaire 5 champs + conversation libre |
+| Recueillir progressivement le profil | ✅ | Questionnaire 5 champs + conversation libre. **Bug trouvé et corrigé (27/08/2026)** : une demande d'orientation formulée implicitement ("je ne sais pas quoi faire après le bac") ne déclenchait pas le questionnaire — l'agent répondait par des questions en texte libre au lieu d'ouvrir le vrai formulaire de l'interface. Corrigé en enrichissant le docstring de `demarrer_questionnaire_orientation` (`llm/tools.py`) avec des exemples de formulations implicites. Testé et vérifié sur 3 variantes ("je ne sais pas quoi faire après le bac", "je suis perdue pour mon orientation", "je ne sais pas quelle filière choisir") : le tool se déclenche à chaque fois. |
 | Présenter une formation/parcours | ✅ | `rechercher_formation` (RAG réel) |
 | Comparer plusieurs parcours | ✅ | `comparer_parcours` (RAG réel) |
 | Recommander un ou plusieurs parcours | ✅ | `analyser_profil_ml` |
@@ -524,10 +524,11 @@ Tests réels effectués pendant cette vérification (pas de simple lecture du pr
 Le sujet exige explicitement l'affichage de : *"ORIENT'IA constitue un outil d'aide à
 l'orientation. Ses recommandations ne remplacent ni l'avis d'un conseiller pédagogique
 ni une décision officielle d'admission."* Ajoutée dans
-`client/src/chat/ChatPage.tsx` sous forme de bandeau `Alert` **persistant** juste sous
-l'en-tête — visible en permanence pendant toute la conversation, pas seulement sur
-l'écran d'accueil (qui disparaît dès le premier message). Texte du sujet repris
-verbatim. Vérifié : `tsc -b` sans erreur, `vite build` réussi.
+`client/src/chat/ChatPage.tsx` sous forme de texte discret (`Typography variant="caption"`)
+sous la zone de saisie — dans le style des disclaimers Gemini/ChatGPT, à la demande de
+l'utilisateur (un bandeau `Alert` en haut, essayé d'abord, jugé trop visible). Reste
+visible en permanence (zone fixe, pas seulement l'écran d'accueil). Vérifié : `vite
+build` réussi après chaque version.
 
 ---
 

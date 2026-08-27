@@ -388,6 +388,13 @@ def demarrer_questionnaire_orientation(
     """Déclenche l'affichage d'un questionnaire interactif sur l'interface utilisateur pour recueillir ses préférences.
 
     Utilise OBLIGATOIREMENT ceci quand l'utilisateur demande une recommandation de filière ou d'orientation et qu'il manque au moins une des 5 informations (matière, environnement, motivation, compétence, série de bac).
+    Une demande d'orientation n'est pas toujours formulée explicitement ("recommande-moi
+    un parcours") : traite aussi comme telle toute expression implicite d'indécision
+    sur l'avenir scolaire/professionnel, par exemple "je ne sais pas quoi faire après
+    le bac", "je ne sais pas quelle filière choisir", "aide-moi à m'orienter", "je suis
+    perdu(e) pour mon orientation" — dans TOUS ces cas, appelle ce tool immédiatement
+    plutôt que de répondre par des questions en texte libre (qui n'affichent pas le
+    formulaire réel de l'interface).
     Ces 5 champs correspondent exactement aux variables du modèle ML (voir analyser_profil_ml) : ne raccourcis pas le questionnaire à 3 questions, la série de bac et la compétence comptent réellement dans le score.
     Si l'utilisateur a déjà mentionné certaines de ses préférences dans son message,
     remplis les arguments correspondants pour que le questionnaire saute ces questions.
