@@ -89,15 +89,6 @@ export default function ChatPage() {
         </Typography>
       </Box>
 
-      {/* Mention obligatoire (sujet, section "Risques à prendre en charge") :
-          affichée en permanence, pas seulement sur l'écran d'accueil, pour
-          rester visible tout au long de la conversation. */}
-      <Alert severity="info" sx={{ borderRadius: 0 }}>
-        ORIENT'IA constitue un outil d'aide à l'orientation. Ses recommandations
-        ne remplacent ni l'avis d'un conseiller pédagogique ni une décision
-        officielle d'admission.
-      </Alert>
-
       <Stack spacing={2} sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
         {messages.length === 0 && (
           <Box
@@ -263,6 +254,21 @@ export default function ChatPage() {
             <SendIcon />
           </IconButton>
         </Stack>
+
+        {/* Mention obligatoire (sujet, section "Risques à prendre en charge") :
+            discrète sous la zone de saisie, dans le style des disclaimers
+            Gemini/ChatGPT, mais visible en permanence (pas seulement à
+            l'écran d'accueil). */}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          align="center"
+          sx={{ display: 'block', mt: 1 }}
+        >
+          ORIENT'IA est un outil d'aide à l'orientation : ses recommandations ne
+          remplacent ni l'avis d'un conseiller pédagogique ni une décision
+          officielle d'admission.
+        </Typography>
       </Box>
 
       <OrientationSurveyModal
