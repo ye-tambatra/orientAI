@@ -62,7 +62,7 @@ export default function StepsAccordion({ steps }: StepsAccordionProps) {
                   wordBreak: 'break-word' 
                 }}
               >
-                {step.result}
+                {formatResult(step.result)}
               </Typography>
             </Box>
           ))}
@@ -70,4 +70,33 @@ export default function StepsAccordion({ steps }: StepsAccordionProps) {
       </AccordionDetails>
     </Accordion>
   )
+}
+
+function formatResult(result: string): string {
+  if (!result) return ''
+  
+  const sourceRegex = /\[Source:\s*([^,]+),\s*ID:\s*([^\]]+)\]/g
+  const matches = [...result.matchAll(sourceRegex)]
+  
+  if (matches.length > 0) {
+    const uniqueSources = new Map<string, string>()
+    for (const match of matches) {
+      const file = match[1].trim()
+      const id = match[2].trim()
+      if (!uniqueSources.has(id)) {
+        uniqueSources.set(id, file)
+      }
+    }
+    
+    const sourceStrings = Array.from(uniqueSources.entries()).map(
+      ([id, file]) => `- ID: ${id}, Source: ${file}`
+    )
+    
+    return `Sources trouvées : ${sourceStrings.join(' ')}`
+  }
+  
+  if (result.length > 200) {
+    return result.substring(0, 200) + '...'
+  }
+  return result
 }
