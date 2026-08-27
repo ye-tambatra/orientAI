@@ -88,5 +88,19 @@
       "parcours_vers_metiers_indicatif"
     ],
     "limitations": "Double inférence (matière→compétence→métier), donc encore plus éloignée d'un fait vérifié que SRC005. La table compétence→métier est une connaissance générale des intitulés de métiers francophones, sans lien spécifique établi avec Madagascar ou l'ISPM. À présenter comme piste indicative à vérifier, jamais comme débouché confirmé. Reproductible via `python -m data_processing.derive_relations`."
+  },
+  {
+    "id": "SRC007",
+    "title": "Proximité structurelle entre filières (tronc commun de matières)",
+    "type": "derived",
+    "file": "data/structured/proximite_filieres.md",
+    "url": null,
+    "status": "interne (dérivé, non officiel)",
+    "consulted_at": "2026-08-27",
+    "description": "Nombre et liste de matières de première année communes entre chaque paire de filières, calculé directement à partir de SRC004 (data/structured/lectures_list.md). Généré par data_processing/derive_proximite_filieres.py.",
+    "extracted_data": [
+      "matieres_communes_entre_filieres"
+    ],
+    "limitations": "N'EST PAS une passerelle officielle : vérifié le 27/08/2026 (WebFetch sur ispm-edu.com/inscription.php et /filieres.php), aucune passerelle n'est mentionnée par l'ISPM. Un tronc commun de matières ne prouve l'existence d'aucune autorisation de transfert entre filières. Toute question de réorientation réelle doit être posée à l'administration de l'ISPM, jamais répondue à partir de ce fichier seul. Reproductible via `python -m data_processing.derive_proximite_filieres`."
   }
 ]

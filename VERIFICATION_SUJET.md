@@ -227,15 +227,34 @@ Vérifié dans `data/structured/` :
   une de ses compétences centrales). Remplacé par un tirage round-robin entre
   compétences ; revérifié après correction, "Développeur logiciel" apparaît bien pour
   IGGLIA.
-- ❌ Passerelles entre formations : aucune mention trouvée dans le corpus scrapé.
+- ✅ Passerelles entre formations : corrigé (27/08/2026), mais différemment des deux
+  points précédents. Vérifié (`WebFetch` sur `ispm-edu.com/inscription.php` et
+  `/filieres.php`) : aucune passerelle officielle n'est mentionnée nulle part. **Décision
+  volontaire de ne PAS dériver une "passerelle" par analogie avec compétences/métiers** :
+  une passerelle est une autorisation administrative réelle, pas une propriété générique
+  déductible des matières — l'inventer aurait été une violation plus grave de la "Règle
+  non négociable" (section 4) et serait tombée dans la confusion conseil pédagogique /
+  décision administrative explicitement interdite (section 16).
+  À la place : `data_processing/derive_proximite_filieres.py` calcule un fait purement
+  descriptif et vérifiable dans nos propres données — le nombre de matières de première
+  année communes entre chaque paire de filières (`data/structured/proximite_filieres.md`,
+  `sources.json` SRC007). Le fichier et le nouvel outil `rechercher_passerelles`
+  (`llm/tools.py`) répètent à chaque niveau (en-tête du fichier, `limitations` du
+  registre, docstring de l'outil) que ceci n'est PAS une passerelle confirmée, et
+  imposent la redirection vers l'administration ISPM pour toute décision réelle de
+  réorientation — ce qui comble accessoirement une partie du manquement identifié en
+  section 9 ("orienter l'utilisateur vers l'administration", précédemment ❌).
+  Testé : `rechercher_passerelles("ISAIA")` renvoie bien ESIIA/IMTICIA/IGGLIA comme
+  filières au tronc commun le plus proche, avec la liste exacte des matières partagées.
 
-**Verdict** : le corpus documentaire couvre bien la présentation générale, les matières,
-les prérequis, les compétences (déduites) et maintenant les relations
-compétences/parcours/métiers (déduites également, doublement documentées comme non
-officielles). L'outil de débouchés répond désormais honnêtement plutôt que de refuser
-systématiquement. Reste 1 des 8 catégories absente du corpus réel (passerelles entre
-formations), et les débouchés officiels (par opposition aux métiers déduits) ne sont
-couverts que partiellement (4/16 filières) faute de contenu source.
+**Verdict** : les 8 catégories demandées par le sujet sont maintenant couvertes d'une
+façon ou d'une autre — soit par du contenu officiel scrapé (mentions/parcours, matières,
+prérequis), soit par des données dérivées explicitement non officielles et documentées
+comme telles (compétences, relations compétences/métiers, proximité de tronc commun en
+lieu et place des passerelles). Les deux limites réelles qui subsistent : les débouchés
+officiels (par opposition aux métiers déduits) ne couvrent que 4/16 filières faute de
+contenu source ; et la "proximité de tronc commun" n'est délibérément pas une passerelle
+confirmée — toute décision de réorientation reste à valider par l'administration ISPM.
 
 ---
 

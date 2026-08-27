@@ -162,6 +162,34 @@ def identifier_debouches(filiere: str) -> str:
     return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
+def rechercher_passerelles(filiere: str) -> str:
+    """Cherche les filières les plus proches d'une filière donnée en termes
+    de programme (tronc commun de matières de première année).
+
+    ATTENTION — CECI N'EST PAS UNE PASSERELLE OFFICIELLE. Aucune page du
+    site ISPM ne mentionne de passerelle entre filières (vérifié le
+    27/08/2026). Le passage retourné (source SRC007) liste uniquement des
+    matières communes entre filières — un fait descriptif, PAS une
+    autorisation administrative de transfert. Un tronc commun important ne
+    prouve absolument pas qu'un changement de filière soit possible.
+
+    Utilise ceci quand l'utilisateur demande s'il peut changer de filière,
+    quelles filières se ressemblent, ou s'il existe des passerelles. Ta
+    réponse DOIT toujours :
+    1. présenter le tronc commun comme une simple proximité de programme,
+       jamais comme une passerelle confirmée ;
+    2. rediriger explicitement l'utilisateur vers l'administration de
+       l'ISPM pour toute question réelle de réorientation ou de transfert
+       (décision administrative, pas un conseil pédagogique que tu peux
+       trancher toi-même).
+
+    Args:
+        filiere: Le nom ou sigle de la filière de départ.
+    """
+    query = f"Filières proches par matières communes de {filiere}"
+    return retrieve_context_for_entity(filiere, query, n_results=6)
+
+
 def _profil_ml_indisponible(detail: str) -> str:
     return (
         "[Modèle ML indisponible] Le modèle de Machine Learning d'ORIENT'IA "
@@ -594,6 +622,7 @@ TOOLS = [
     rechercher_competences,
     analyser_profil_ml,
     identifier_debouches,
+    rechercher_passerelles,
     calculer_score_adequation,
     identifier_points_forts,
     expliquer_recommandation_ml,
