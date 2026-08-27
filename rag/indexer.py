@@ -59,7 +59,8 @@ for md_file in md_files:
         chunk_meta = {
             "source_id": meta['id'],
             "original_file": meta['file'],
-            "title": meta['title']
+            "title": meta['title'],
+            "status": meta.get('status') or "",
         }
         for key, value in doc.metadata.items():
             chunk_meta[key] = value

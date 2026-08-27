@@ -438,16 +438,30 @@ point de bonus associé ne pourra être valorisé sur ce projet.
 
 ## 13. Protocole d'évaluation (page 9) — 32 cas de test minimum
 
-❌ **Non trouvé dans le dépôt.** Recherche effectuée (`find` sur des noms comme *eval*,
-*test_cases*, *jeu_test*) : aucun fichier ne correspond au jeu de 32 cas de test réparti
-sur les 9 catégories exigées (factuel, comparaisons, ML, multi-source, absence de
-corpus, ambiguïté, sécurité/prompt injection, biais, profilage psychologique).
+✅ **Corrigé (27/08/2026).** Livré dans `livrables/13_protocole_evaluation/` :
+- `protocole_evaluation.md` — les 32 cas de test, répartis exactement sur les 9
+  catégories exigées avec leurs minimums (factuel 5, comparaisons 4, ML 6,
+  multi-étapes 4, absence corpus 3, ambigu 3, sécurité 3, biais 2, provenance/profilage 2).
+- `transcriptions_brutes.json` — trace complète et réelle de chaque cas (réponse,
+  outils appelés avec arguments, sources citées), produite par
+  `scripts/run_evaluation_protocol.py` (32 appels Gemini réels, pas simulés).
+- `resultats_evaluation.md` — verdict par cas avec preuve (extrait réel), pas
+  d'affirmation non vérifiée : **30/32 conformes, 2 partiels, 0 échec net**.
 
-Ce qui existe est différent et ne s'y substitue pas : `ml/artifacts/evaluation_report.md`
-évalue uniquement la composante ML (comparaison de modèles, métriques) — pas le système
-complet (agent + RAG + sécurité) que ce protocole exige. **C'est un livrable obligatoire
-manquant à ce stade**, et il pèse 14 points au barème (section "Évaluation
-expérimentale de bout en bout").
+Ce protocole a une valeur au-delà de la conformité au barème : **il a détecté une
+vraie régression** introduite plus tôt dans ce travail (8 cas ont révélé que
+`verifier_prerequis`/`rechercher_formation`/`comparer_parcours`/`obtenir_informations_ispm`
+ne retrouvaient plus les documents officiels, noyés par les données dérivées ajoutées à
+l'index RAG) et **un vrai défaut de synthèse** (cas M1 : distinction officiel/déduit
+perdue par le LLM lors d'un tour combinant deux outils). Les deux ont été corrigés et
+re-vérifiés dans la foulée (`rag/retriever.py`, `rag/indexer.py`, `llm/tools.py`) —
+détail dans `resultats_evaluation.md`. C'est exactement ce que
+`ml/artifacts/evaluation_report.md` (qui n'évalue que le ML seul) n'aurait jamais pu
+détecter, ce qui valide la nécessité de ce protocole de bout en bout.
+
+Reste 2 limites documentées honnêtement plutôt que masquées : ML5 (deux sigles de
+filières mal développés par le LLM) et ML6 (le seuil d'ambiguïté du modèle peut
+classer "non ambigu" un profil quasiment vide).
 
 ---
 
@@ -503,15 +517,17 @@ Tests réels effectués pendant cette vérification (pas de simple lecture du pr
 | Demandes d'informations personnelles | ⚠️ | Non testé formellement |
 | Informations contradictoires | ⚠️ | Non testé formellement |
 | Affirmations non justifiées | ✅ | Cohérent avec les tests d'invention ci-dessus |
-| Confusion conseil pédagogique / décision administrative | ❌ | Aucun mécanisme trouvé pour rediriger vers l'administration (voir section 9) |
+| Confusion conseil pédagogique / décision administrative | ⚠️ | Partiel : `rechercher_passerelles` (section 3) redirige vers l'administration pour les réorientations ; pas encore généralisé aux autres décisions officielles (admissions...) — voir section 9 |
 
-### ❌ Mention obligatoire dans l'interface — absente
+### ✅ Mention obligatoire dans l'interface — corrigée (27/08/2026)
 
 Le sujet exige explicitement l'affichage de : *"ORIENT'IA constitue un outil d'aide à
 l'orientation. Ses recommandations ne remplacent ni l'avis d'un conseiller pédagogique
-ni une décision officielle d'admission."* Recherche effectuée dans tout `client/src/` :
-**aucune trace de ce texte, ni d'un texte équivalent.** C'est une exigence non négociable
-("Mention obligatoire dans l'interface") et elle manque actuellement.
+ni une décision officielle d'admission."* Ajoutée dans
+`client/src/chat/ChatPage.tsx` sous forme de bandeau `Alert` **persistant** juste sous
+l'en-tête — visible en permanence pendant toute la conversation, pas seulement sur
+l'écran d'accueil (qui disparaît dès le premier message). Texte du sujet repris
+verbatim. Vérifié : `tsc -b` sans erreur, `vite build` réussi.
 
 ---
 
@@ -527,15 +543,15 @@ ni une décision officielle d'admission."* Recherche effectuée dans tout `clien
 | 6 | Questionnaire d'enquête + registre + réponses anonymisées | ✅ |
 | 7 | Notebooks d'analyse et d'entraînement | ✅ `ml/notebooks/01_eda_et_entrainement.ipynb` |
 | 8 | Modèle entraîné ou script pour le reproduire | ✅ `ml/artifacts/model.json` + `python -m ml.train` |
-| 9 | Jeu d'évaluation | ❌ Absent pour le système complet (voir section 13) ; présent pour le ML seul |
-| 10 | Résultats d'évaluation | ⚠️ Présents pour le ML seul (`ml/artifacts/evaluation_*`) |
+| 9 | Jeu d'évaluation | ✅ Corrigé (27/08/2026) — `livrables/13_protocole_evaluation/protocole_evaluation.md` (système complet) + présent pour le ML seul |
+| 10 | Résultats d'évaluation | ✅ Corrigé (27/08/2026) — `livrables/13_protocole_evaluation/resultats_evaluation.md` (système complet, 30/32 conformes) + présents pour le ML seul (`ml/artifacts/evaluation_*`) |
 | 11 | **Schéma d'architecture** | ❌ Absent — aucun fichier trouvé (diagramme, image, ou markdown dédié) |
 | 12 | **Note limites/biais/risques** | ⚠️ Partiellement dispersée (`ml/README.md`, rapports ML) mais pas de note unique couvrant risques de sécurité/agent/RAG comme document livrable séparé |
 | 13 | Vidéo de démonstration 3-5 min | — non vérifiable depuis le code |
 | 14 | Démonstration fonctionnelle | ✅ Le système tourne réellement (vérifié tout au long de cette conversation) |
 
-**3 livrables manquants ou clairement incomplets : README.md racine, jeu d'évaluation
-système complet, schéma d'architecture.**
+**2 livrables manquants ou clairement incomplets restants : README.md racine,
+schéma d'architecture.**
 
 ---
 
@@ -566,8 +582,9 @@ manques identifiés ci-dessus :
   par l'incohérence SRC003 (section 4) et le mode de diffusion enquête non complété.
 - **Machine Learning et analyse des résultats (18 pts)** : point fort du projet, section 7
   quasi intégralement conforme.
-- **Évaluation expérimentale de bout en bout (14 pts)** : rubrique la plus exposée — le
-  protocole des 32 cas de test (section 13) est absent.
+- **Évaluation expérimentale de bout en bout (14 pts)** : corrigé (27/08/2026) — le
+  protocole des 32 cas de test (section 13) est livré, exécuté réellement, 30/32
+  conformes.
 - **Observabilité, sécurité et gestion des biais (7 pts)** : traces partielles (scores de
   recherche et temps d'exécution manquants, section 15).
 - **Démonstration, vidéo et qualité du dépôt (5 pts)** : README.md racine et schéma
@@ -580,18 +597,18 @@ manques identifiés ci-dessus :
 | Critère du jury | Verdict de cette vérification |
 |---|---|
 | Fondé sur des données traçables | ✅ Incohérence SRC003 corrigée (27/08/2026) ; nouvelles données dérivées (SRC005-SRC007) toutes honnêtement typées "non officiel" |
-| Scientifiquement évalué | ⚠️ Oui pour le ML, non pour le reste du système |
+| Scientifiquement évalué | ✅ ML rigoureusement évalué ET système complet couvert (27/08/2026, 32 cas de test) |
 | Capable de justifier ses recommandations | ✅ Bien couvert (raisons chiffrées en interne, reformulées) |
 | **Conscient de ses limites** | ✅ Corrigé (27/08/2026) — signal d'ambiguïté mesuré (`ambiguite_profil`), reconnu quand réellement justifié (section 2/9) |
 | Suffisamment observable pour être analysé | ⚠️ Traces solides mais incomplètes (pas de scores de recherche ni de temps d'exécution) |
-| Suffisamment robuste (hypothèse ≠ décision pédagogique) | ⚠️ Bons refus testés (injection, discrimination, profilage) ; orientation vers l'administration désormais partielle (`rechercher_passerelles`), mais la mention obligatoire d'interface est encore absente |
+| Suffisamment robuste (hypothèse ≠ décision pédagogique) | ⚠️ Bons refus testés (injection, discrimination, profilage) ; orientation vers l'administration désormais partielle (`rechercher_passerelles`) ; mention obligatoire d'interface ajoutée (27/08/2026) |
 
 ### Chantiers prioritaires restants
 
-1. **Le protocole d'évaluation système complet (32 cas de test) est le trou le plus
-   lourd au barème** — 14 points directement concernés, rien n'existe encore.
+1. ~~Le protocole d'évaluation système complet (32 cas de test)~~ — **résolu**
+   (27/08/2026), `livrables/13_protocole_evaluation/`, 30/32 conformes.
 2. ~~La tension "jamais incertain" vs "reconnaître l'incertitude"~~ — **résolue**
    (27/08/2026) par un signal mesuré plutôt qu'une interdiction générale.
-3. **Trois livrables manquants et faciles à produire** : README.md racine, schéma
-   d'architecture, mention obligatoire d'interface — aucun ne nécessite de nouveau
-   développement, seulement de la rédaction.
+3. ~~Trois livrables/manques faciles à produire~~ — **mention obligatoire d'interface
+   résolue** (27/08/2026) ; README.md racine et schéma d'architecture existent déjà
+   selon l'utilisateur, dans un autre dossier, à intégrer au dépôt.

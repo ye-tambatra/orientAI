@@ -73,11 +73,27 @@ def retrieve_by_keyword(keyword: str, n_results: int = 4) -> str:
         content_hits = doc.lower().count(keyword_lower)
         if not header_match and not content_hits:
             continue
+        # Priorité au statut OFFICIEL avant tout le reste. Sans ce premier
+        # étage, un fichier dérivé (compétences/métiers/proximité) bien
+        # découpé par filière (donc avec un match de TITRE, +100) passait
+        # systématiquement devant la page officielle brute correspondante
+        # (un seul gros chunk sans titre de section, seulement un match de
+        # CONTENU) — vérifié : verifier_prerequis("IGGLIA") ne retrouvait
+        # même plus les conditions d'admission réelles (SRC001) à cause de
+        # ça. Une source officielle qui contient le mot-clé doit toujours
+        # sortir avant une source dérivée, quel que soit le découpage.
+        est_officiel = str(meta.get("status", "")).lower().startswith("officia") or \
+            str(meta.get("status", "")).lower().startswith("official")
         # Un chunk dont le TITRE DE SECTION correspond (ex: "... (ISAIA)")
-        # est presque toujours le bon résultat : une grande page de menu qui
-        # mentionne juste le sigle une fois dans une liste ne doit pas
-        # passer devant. D'où l'écart de score volontairement large.
-        score = (100 if header_match else 0) + content_hits
+        # est presque toujours le bon résultat parmi les sources de même
+        # statut : une grande page de menu qui mentionne juste le sigle une
+        # fois dans une liste ne doit pas passer devant. D'où l'écart de
+        # score volontairement large à ce second étage.
+        score = (
+            (1_000_000 if est_officiel else 0)
+            + (100 if header_match else 0)
+            + content_hits
+        )
         scored.append((score, doc, meta))
 
     scored.sort(key=lambda item: item[0], reverse=True)

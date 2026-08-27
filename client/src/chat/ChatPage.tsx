@@ -89,6 +89,15 @@ export default function ChatPage() {
         </Typography>
       </Box>
 
+      {/* Mention obligatoire (sujet, section "Risques à prendre en charge") :
+          affichée en permanence, pas seulement sur l'écran d'accueil, pour
+          rester visible tout au long de la conversation. */}
+      <Alert severity="info" sx={{ borderRadius: 0 }}>
+        ORIENT'IA constitue un outil d'aide à l'orientation. Ses recommandations
+        ne remplacent ni l'avis d'un conseiller pédagogique ni une décision
+        officielle d'admission.
+      </Alert>
+
       <Stack spacing={2} sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
         {messages.length === 0 && (
           <Box

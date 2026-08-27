@@ -11,7 +11,7 @@ import datetime
 
 from ml.inference import ModelNotTrainedError, get_model
 from ml.vocab import SERIES_BAC
-from rag.retriever import retrieve_context, retrieve_context_for_entity
+from rag.retriever import retrieve_context_for_entity
 
 
 def get_current_time() -> str:
@@ -43,7 +43,7 @@ def rechercher_formation(mot_cle: str) -> str:
         mot_cle: Le thème, domaine ou nom de filière recherché.
     """
     query = f"Filière ou formation en rapport avec {mot_cle} à l'ISPM"
-    return retrieve_context(query, n_results=4)
+    return retrieve_context_for_entity(mot_cle, query, n_results=4)
 
 
 def verifier_prerequis(filiere: str, serie_bac: str = "") -> str:
@@ -60,7 +60,7 @@ def verifier_prerequis(filiere: str, serie_bac: str = "") -> str:
     query = f"Conditions d'admission et prérequis pour la filière {filiere}"
     if serie_bac:
         query += f" pour un baccalauréat série {serie_bac}"
-    return retrieve_context(query, n_results=3)
+    return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
 def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
@@ -73,11 +73,11 @@ def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
         filiere_a: Le nom ou sigle de la première filière.
         filiere_b: Le nom ou sigle de la deuxième filière.
     """
-    contexte_a = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_a}", n_results=3
+    contexte_a = retrieve_context_for_entity(
+        filiere_a, f"Présentation et parcours de la filière {filiere_a}", n_results=3
     )
-    contexte_b = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_b}", n_results=3
+    contexte_b = retrieve_context_for_entity(
+        filiere_b, f"Présentation et parcours de la filière {filiere_b}", n_results=3
     )
     return (
         f"== {filiere_a} ==\n{contexte_a}\n\n"
@@ -127,7 +127,7 @@ def expliquer_recommandation(filiere: str, raison: str = "") -> str:
     query = f"Pourquoi choisir la filière {filiere} : présentation, compétences et objectifs"
     if raison:
         query += f", en lien avec {raison}"
-    return retrieve_context(query, n_results=4)
+    return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
 def identifier_debouches(filiere: str) -> str:
@@ -159,7 +159,25 @@ def identifier_debouches(filiere: str) -> str:
         f"Débouchés professionnels, secteurs d'activité et métiers pour les "
         f"diplômés de la filière {filiere} de l'ISPM"
     )
-    return retrieve_context_for_entity(filiere, query, n_results=4)
+    contexte = retrieve_context_for_entity(filiere, query, n_results=4)
+    # Consigne répétée ICI (pas seulement dans le docstring) : un test réel
+    # (protocole d'évaluation, cas M1) a montré qu'un tour combinant cet
+    # outil avec analyser_profil_ml pouvait, dans sa synthèse finale,
+    # présenter des métiers DÉDUITS (SRC006) comme "officiels" — alors que
+    # le disclaimer figurait bien dans le passage RAG mais n'a pas suffi. Le
+    # docstring n'est lu qu'au moment de décider d'appeler l'outil ; cette
+    # consigne, elle, fait partie du résultat vu au moment de rédiger la
+    # réponse finale, comme pour les outils ML.
+    return (
+        "[Rappel avant de répondre : dans le passage ci-dessous, seule une "
+        "phrase de présentation officielle incidente (si présente pour "
+        "cette filière) constitue un débouché confirmé par l'ISPM. Toute "
+        "liste \"métiers indicatifs (déduits...)\" est une estimation de "
+        "l'équipe, PAS une donnée ISPM — même si tu combines ce résultat "
+        "avec celui d'un autre outil (ex: analyser_profil_ml) dans la même "
+        "réponse, ne les fusionne jamais sous une même étiquette \"officiel\" "
+        "ou \"selon les éléments officiels\".]\n" + contexte
+    )
 
 
 def rechercher_passerelles(filiere: str) -> str:
@@ -454,7 +472,7 @@ def obtenir_informations_ispm() -> str:
     l'institut (historique court, localisation).
     """
     query = "Informations générales sur l'ISPM, contact, adresse, téléphone, email"
-    return retrieve_context(query, n_results=4)
+    return retrieve_context_for_entity("Contact", query, n_results=4)
 
 
 def calculer_score_adequation(
