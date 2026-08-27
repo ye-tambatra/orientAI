@@ -127,11 +127,3 @@ Ouvrez un **nouveau terminal**, et naviguez dans le dossier `client` depuis la r
 
 ## Utilisation
 Une fois le backend et le frontend démarrés en parallèle (chacun dans son terminal), ouvrez simplement l'URL locale fournie par Vite (par exemple `http://localhost:5173`) dans votre navigateur pour commencer à discuter avec l'agent OrientIA.
-
-## Vidéo de démonstration
-
-<!-- TODO: remplacer par le lien une fois la vidéo hébergée (YouTube, Drive...) -->
-[Voir la vidéo de démonstration](LIEN_A_COMPLETER)
-
-*Non hébergée dans ce dépôt : le fichier (`videoTpClinique.mp4`, ~169 Mo) dépasse la
-limite de 100 Mo de GitHub sans Git LFS.*
