@@ -398,14 +398,14 @@ officielles (ex: admissions) si le temps le permet.
 
 | Élément | Statut | Preuve |
 |---|---|---|
-| Préparation et découpage | ✅ | `MarkdownHeaderTextSplitter` (`rag/indexer.py`) |
+| Préparation et découpage | ✅ | `MarkdownHeaderTextSplitter` (`rag/indexer.py`). **Amélioré (27/08/2026, fusion `feat/merge-rag-ml`)** : les fichiers markdown scrapés ont été réécrits avec de vrais en-têtes `##`/`###` par filière (avant : un seul gros chunk par page, cf. section 1/3 des versions précédentes de ce document) — `page_ispm_filiere.html` découpe maintenant en 17 chunks au lieu d'1, `page_presentation_filiere.html` en 10, `condition_access...` en 4. |
 | Génération d'embeddings | ✅ | `DefaultEmbeddingFunction` (all-MiniLM-L6-v2) |
 | Indexation vectorielle | ✅ | ChromaDB (`rag/chroma_db/`) |
-| Recherche des passages pertinents | ⚠️ | Fonctionne mais **sans seuil de pertinence** (section 1) |
+| Recherche des passages pertinents | ⚠️ | Toujours **sans seuil de distance/pertinence** en recherche vectorielle pure (section 1), mais désormais complétée par une recherche par mot-clé priorisant les sources officielles (`rag/retriever.py::retrieve_context_for_entity`, ajoutée et validée par le protocole d'évaluation, section 13) pour les outils qui connaissent une entité précise (filière). |
 | Reranking | ❌ | Non implémenté — explicitement optionnel ("éventuel") dans le sujet |
 | Génération fondée sur les passages | ✅ | Testé, réponses citent le contenu réel récupéré |
 | Citations vérifiables | ✅ | URLs réelles via `sources.json` |
-| Recherche hybride (vectoriel+lexical+graphe) | ❌ | Non implémenté — explicitement optionnel ("est autorisée") |
+| Recherche hybride (vectoriel+lexical+graphe) | ⚠️ | Partiellement implémenté (27/08/2026) : `retrieve_context_for_entity` combine recherche par mot-clé (lexical) et recherche vectorielle — pas de composante graphe. |
 
 **Découverte opérationnelle pendant cette vérification** : la collection ChromaDB était
 **vide (0 documents)** avant que je la reconstruise (`python rag/indexer.py`) pour tester
@@ -537,7 +537,7 @@ build` réussi après chaque version.
 | # | Livrable | Statut |
 |---|---|---|
 | 1 | Code source complet | ✅ |
-| 2 | **README.md racine** (install/exécution) | ❌ **Absent** — vérifié, aucun `README.md` à la racine du dépôt (seul `client/README.md` existe, pour le frontend uniquement) |
+| 2 | **README.md racine** (install/exécution) | ✅ Corrigé (27/08/2026, fusion de `feat/merge-rag-ml`) — présent à la racine, équipe et rôles documentés |
 | 3 | Corpus / mécanisme de collecte reproductible | ✅ `data_processing/`, `rag/indexer.py` |
 | 4 | Registre des sources | ✅ `data/structured/sources.json` (avec la réserve de la section 4 ci-dessus) |
 | 5 | Jeu de données ML | ✅ `data/ml/synthetic/`, `data/ml/survey/` |
@@ -546,13 +546,14 @@ build` réussi après chaque version.
 | 8 | Modèle entraîné ou script pour le reproduire | ✅ `ml/artifacts/model.json` + `python -m ml.train` |
 | 9 | Jeu d'évaluation | ✅ Corrigé (27/08/2026) — `livrables/13_protocole_evaluation/protocole_evaluation.md` (système complet) + présent pour le ML seul |
 | 10 | Résultats d'évaluation | ✅ Corrigé (27/08/2026) — `livrables/13_protocole_evaluation/resultats_evaluation.md` (système complet, 30/32 conformes) + présents pour le ML seul (`ml/artifacts/evaluation_*`) |
-| 11 | **Schéma d'architecture** | ❌ Absent — aucun fichier trouvé (diagramme, image, ou markdown dédié) |
+| 11 | **Schéma d'architecture** | ✅ Corrigé (27/08/2026, fusion de `feat/merge-rag-ml`) — `SCHEMA_ARCHITECTURE.png` à la racine |
 | 12 | **Note limites/biais/risques** | ⚠️ Partiellement dispersée (`ml/README.md`, rapports ML) mais pas de note unique couvrant risques de sécurité/agent/RAG comme document livrable séparé |
 | 13 | Vidéo de démonstration 3-5 min | — non vérifiable depuis le code |
 | 14 | Démonstration fonctionnelle | ✅ Le système tourne réellement (vérifié tout au long de cette conversation) |
 
-**2 livrables manquants ou clairement incomplets restants : README.md racine,
-schéma d'architecture.**
+**Tous les livrables listés sont désormais présents ou partiellement présents**,
+à l'exception de la vidéo (non vérifiable depuis le code) et de la note de
+limites/biais/risques unifiée (point 12, toujours dispersée).
 
 ---
 
@@ -588,8 +589,9 @@ manques identifiés ci-dessus :
   conformes.
 - **Observabilité, sécurité et gestion des biais (7 pts)** : traces partielles (scores de
   recherche et temps d'exécution manquants, section 15).
-- **Démonstration, vidéo et qualité du dépôt (5 pts)** : README.md racine et schéma
-  d'architecture absents (livrables 2 et 11).
+- **Démonstration, vidéo et qualité du dépôt (5 pts)** : corrigé (27/08/2026, fusion de
+  `feat/merge-rag-ml`) — README.md racine et schéma d'architecture présents
+  (livrables 2 et 11). Reste la vidéo, non vérifiable depuis le code.
 
 ---
 
@@ -610,6 +612,9 @@ manques identifiés ci-dessus :
    (27/08/2026), `livrables/13_protocole_evaluation/`, 30/32 conformes.
 2. ~~La tension "jamais incertain" vs "reconnaître l'incertitude"~~ — **résolue**
    (27/08/2026) par un signal mesuré plutôt qu'une interdiction générale.
-3. ~~Trois livrables/manques faciles à produire~~ — **mention obligatoire d'interface
-   résolue** (27/08/2026) ; README.md racine et schéma d'architecture existent déjà
-   selon l'utilisateur, dans un autre dossier, à intégrer au dépôt.
+3. ~~Trois livrables/manques faciles à produire~~ — **tous résolus** (27/08/2026) :
+   mention obligatoire d'interface ajoutée, README.md racine et schéma d'architecture
+   intégrés au dépôt via la fusion de `feat/merge-rag-ml` (branche d'un coéquipier,
+   contenant aussi le nettoyage des sources markdown avec de vrais en-têtes par
+   filière — voir section 10 — et sa propre mention obligatoire/suggestions de
+   question dans l'UI).
