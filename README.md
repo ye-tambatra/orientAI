@@ -2,6 +2,29 @@
 
 OrientIA est un projet d'agent conversationnel basé sur l'Intelligence Artificielle (RAG), conçu pour fournir des informations et aider à l'orientation des utilisateurs.
 
+## Équipe du Projet
+
+Nous sommes une équipe de 6 personnes réparties sur trois pôles d'expertise :
+
+- **Machine Learning (Classification d'Orientation)** :
+  - *Mission* : Collecte, création et prétraitement des jeux de données d'orientation. Conception et entraînement d'un modèle de classification ayant pour but de prédire et recommander le parcours ou la filière idéale pour un utilisateur en fonction de son profil et de ses compétences.
+  - *Membres* :
+   - RABEMANANTSIMBA Onja Faneva Rinoh                - IGGLIA5 - N 18
+   - RANDIMBIARISOA Santatriniaina Charles Ricardo    - IGGLIA5 - N 46
+
+- **Agents IA & RAG (Retrieval-Augmented Generation)** :
+  - *Mission* : Création des agents conversationnels intelligents avec gestion de la mémoire contextuelle (historique des discussions). Conception du système RAG incluant la collecte, le traitement et l'indexation de documents issus de sources variées (sites web, brochures). Configuration du système de "Tool calling" (appels de fonctions) pour permettre à l'IA d'interagir dynamiquement avec la base de connaissances.
+  - *Membres* :
+    - NOFINIAINA NATOLOJANAHARY Tambatra Namelantsoa  - IGGLIA5 - N 03
+    
+
+- **Intégration (Frontend & Backend API)** :
+  - *Mission* : Développement complet de l'interface utilisateur (Frontend) pour une expérience fluide et interactive. Conception de l'API côté serveur (Backend) et orchestration technique globale. Cette équipe s'est chargée du câblage complexe permettant de faire communiquer l'interface web avec les agents IA, le moteur RAG et le modèle de Machine Learning.
+  - *Membres* :
+    - ANDRIAMIALINIRINA Fanantenana                    - IGGLIA5 - N 10
+    - KOLOINA RASOLOHERISON Raharisoanjatozo Nambinina - IGGLIA5 - N 34
+   
+
 ## Stack Technologique
 
 Le projet est divisé en deux parties principales : un backend (API) et un frontend (Client).
