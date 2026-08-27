@@ -56,17 +56,23 @@ une justification générique.
 - Admissions → `verifier_prerequis` : ✅ réel, interroge le RAG.
 - Matières/compétences → `rechercher_competences` : ✅ réel, interroge le RAG
   (`data/structured/lectures_list.md` scrapé).
-- **Débouchés → `identifier_debouches` : ❌ non implémenté.** Le tool retourne
-  systématiquement *"Les débouchés professionnels ne sont pas encore renseignés dans la
-  base de connaissances"* (`llm/tools.py:123-137`), quel que soit l'appel. Vérifié : aucun
-  contenu de débouchés n'existe réellement dans le corpus scrapé
-  (`data/structured/page_presentation_filiere.md` ne contient qu'un lien de menu "Offres
-  d'emploi", pas de texte exploitable).
-  **Incohérence trouvée** : `data/structured/sources.json` (SRC003) déclare
-  `"extracted_data": ["presentation", "formations", "debouches"]` — le registre des sources
-  affirme que les débouchés ont été extraits, ce qui est faux. À corriger avant la
-  démonstration finale (le jury pose explicitement une question sur les débouchés dans les
-  exemples de la section "Démonstration finale").
+- **Débouchés → `identifier_debouches` : ✅ corrigé (27/08/2026).** Le tool interroge
+  désormais réellement le RAG (`llm/tools.py`), au lieu de renvoyer systématiquement un
+  stub "non disponible". Vérifié en conditions réelles après reconstruction de l'index
+  Chroma : le corpus ISPM n'a pas de page dédiée aux débouchés, mais
+  `data/structured/page_ispm_filiere.md` (SRC002) contient des phrases de débouché
+  incidentes pour certaines filières seulement (ISAIA, DTJA, EMII, TEE) — testé,
+  `identifier_debouches("ISAIA")` récupère bien *"les étudiants peuvent travailler dans
+  diverses branches de l'économie : les banques, les entreprises industrielles, les
+  entreprises commerciales"*. Pour une filière sans mention explicite (testé avec IGGLIA),
+  le docstring interdit désormais explicitement d'inventer ou de généraliser à partir de
+  filières voisines : le LLM doit reconnaître l'absence d'info pour cette filière précise.
+  **Incohérence corrigée** : `data/structured/sources.json` affirmait à tort (SRC003,
+  `presentation.php`) que des débouchés y avaient été extraits — c'était faux, ce fichier
+  ne contient qu'historique/objectifs/recteur. Le registre a été corrigé : la mention
+  "debouches" est déplacée vers SRC002 (la vraie source partielle), avec une `limitations`
+  honnête précisant que la majorité des filières n'ont aucune mention explicite de
+  débouchés dans le corpus.
 
 ### ⚠️ "reconnaître les situations dans lesquelles les informations disponibles ne permettent pas de conclure"
 
@@ -91,16 +97,12 @@ une justification générique.
 
 ## Verdict section 1
 
-4 capacités sur 6 pleinement conformes et vérifiées en conditions réelles. 2 points
-faibles identifiés, tous deux réels (pas hypothétiques) :
-1. `identifier_debouches` est un stub qui ne répond jamais — et le registre des sources
-   ment sur ce point.
-2. Le RAG n'a pas de seuil de pertinence : la détection du "je ne sais pas" n'est pas
+5 capacités sur 6 pleinement conformes et vérifiées en conditions réelles (mise à jour du
+27/08/2026 : `identifier_debouches` corrigé, voir ci-dessus). 1 point faible restant :
+1. Le RAG n'a pas de seuil de pertinence : la détection du "je ne sais pas" n'est pas
    mesurée, elle dépend entièrement du bon vouloir du LLM.
 
-**Recommandation** : traiter le point 1 en priorité (soit enrichir le corpus avec de vrais
-débouchés scrapés, soit documenter clairement la limite dans la note de limites/biais
-livrable) ; le point 2 peut être traité par un seuil de distance simple dans
+**Recommandation** : traiter ce point par un seuil de distance simple dans
 `retrieve_context` si le temps le permet.
 
 ---
@@ -150,18 +152,21 @@ Testé en direct (voir aussi section 1) :
   ("tu as mentionné : Mathématiques...", `ml/inference.py:_reason_phrase`).
 - **Traçable** : ✅ `llm/agent.py:_extract_steps`/`_extract_sources` exposent les outils
   appelés, leurs arguments, leurs résultats, et les sources RAG citées avec URL.
-- **Prudente : ⚠️ tension réelle à signaler.** Un changement récent de ce projet, fait à
-  la demande explicite de l'utilisateur, interdit désormais à l'agent d'employer le mot
-  "incertain" ou toute formulation hésitante ("difficile de trancher") — voir
-  `llm/agent.py` (SYSTEM_INSTRUCTION) et `llm/tools.py`
-  (`analyser_profil_ml`/`calculer_score_adequation`). Le disclaimer ("pas une décision
-  officielle") reste présent partout, mais la **reconnaissance explicite de
-  l'incertitude quand les scores sont proches a été retirée** au profit d'une réponse
-  toujours confiante (avec alternatives justifiées). Ceci entre directement en tension
-  avec le sujet, qui exige explicitement (section 9) : *"reconnaître l'incertitude"*
-  comme capacité de l'assistant, et (Critère directeur) un système *"conscient de ses
-  limites"*. Ce n'est pas un bug caché : c'est une décision produit assumée, mais le jury
-  pourrait la questionner directement (la section "Démonstration finale" teste "Quelles
+- **Prudente : ✅ tension résolue (27/08/2026).** L'interdiction générale et
+  systématique du mot "incertain" a été remplacée par un signal MESURÉ : le modèle
+  calcule désormais un écart réel entre le domaine n°1 et le n°2 (`ml/inference.py`,
+  `AMBIGUITY_GAP_THRESHOLD`, champ `ambiguite_profil` sur `rank_domaines` et
+  `score_adequation`). `llm/tools.py` (`analyser_profil_ml`/`calculer_score_adequation`)
+  et `llm/agent.py` (SYSTEM_INSTRUCTION) instruisent maintenant l'agent à suivre ce
+  signal à la lettre : confiant sans réserve quand un domaine se détache clairement,
+  honnête et concret sur l'ambiguïté quand le signal le dit vraiment (jamais de
+  hedging vague et systématique sans cause). Testé en conditions réelles : un profil
+  clair (maths/info/programmation) → "NON ambigu", présenté directement ; un profil
+  vide → "AMBIGU", reconnu honnêtement au lieu d'être forcé vers une fausse confiance.
+  Ceci répond directement au sujet (section 9 : *"reconnaître l'incertitude"* ; Critère
+  directeur : système *"conscient de ses limites"*) sans revenir au hedging vague que
+  l'utilisateur avait initialement fait retirer — l'incertitude n'est signalée que
+  quand un chiffre réel la justifie. (La section "Démonstration finale" teste "Quelles
   informations te manquent pour rendre cette recommandation fiable ?" — réponse testée
   plus bas, section 16).
 
@@ -181,19 +186,78 @@ Vérifié dans `data/structured/` :
 - ✅ Matières principales (`lectures_list.md`, 13 filières sur 16 couvertes réellement —
   voir `ml/filieres.py` pour la liste des 3 filières non couvertes, avec `assumed_matieres=True`
   documenté honnêtement comme hypothèse).
-- ❌ Compétences développées : pas de liste "compétences" séparée des matières — le
-  corpus scrapé ne distingue pas explicitement les deux.
+- ✅ Compétences développées : corrigé (27/08/2026). Vérifié par `WebFetch` en direct sur
+  `ispm-edu.com/filieres.php` et `/presentation.php` : le site officiel ne publie
+  réellement aucune liste de compétences distincte des matières — rien à scraper de plus.
+  Ajout d'un fichier dérivé documenté (`data/structured/competences_par_filiere.md`,
+  généré par `data_processing/derive_competences.py`, reproductible) : chaque matière est
+  rattachée à une famille de compétences via une table explicite, le résultat par filière
+  est marqué noir sur blanc "non officiel"/"déduit" dans le contenu lui-même et dans le
+  registre (`sources.json`, SRC005, statut "interne (dérivé, non officiel)"). L'outil
+  `rechercher_competences` (`llm/tools.py`) instruit désormais le LLM à toujours distinguer
+  matières (officielles, SRC004) et compétences (déduites, SRC005) devant l'utilisateur —
+  jamais présenter les secondes comme un fait ISPM.
+  **Effet de bord découvert et corrigé en marge** : tester ce fix a révélé que la
+  recherche vectorielle par défaut ratait le bon chunk (le chunk "ISAIA" ne sortait même
+  pas dans les 8 premiers résultats sur une requête "ISAIA" — vérifié). Ajout d'une
+  recherche par mot-clé priorisée sur le titre de section
+  (`rag/retriever.py:retrieve_by_keyword`/`retrieve_context_for_entity`), utilisée par
+  `rechercher_competences`. Testé : `rechercher_competences("ISAIA")` renvoie maintenant
+  en premiers résultats les bons chunks (compétences ISAIA, puis matières ISAIA), pour
+  IGGLIA/TEH/DTJA également. Ce correctif est local à cet outil ; les autres outils RAG
+  (`rechercher_formation`, `verifier_prerequis`, `comparer_parcours`...) ont
+  potentiellement le même problème de fond (section 10) mais n'ont pas été retouchés ici —
+  à traiter dans un point dédié si besoin.
 - ✅ Prérequis (`condition_access_en_premiere_annee.md`).
-- ❌ Débouchés professionnels : confirmé absent (voir section 1 — `identifier_debouches`
-  est un stub).
-- ❌ Relations compétences/parcours/métiers : aucune donnée structurée de ce type dans
-  le corpus documentaire (seule `ml/domaines.py` a une table domaine→filière, pas
-  compétence→métier).
-- ❌ Passerelles entre formations : aucune mention trouvée dans le corpus scrapé.
+- ⚠️ Débouchés professionnels : `identifier_debouches` interroge maintenant réellement
+  le RAG (corrigé le 27/08/2026, voir section 1), mais le corpus lui-même ne couvre
+  toujours que 4 des 16 filières (ISAIA, DTJA, EMII, TEE) avec une phrase incidente — ce
+  n'est pas une catégorie de données structurée et complète comme le sujet le demande.
+- ✅ Relations compétences/parcours/métiers : corrigé (27/08/2026). Même constat que pour
+  les compétences (rien à scraper : aucune page ISPM ne publie ce type de relation).
+  Ajout de `data/structured/relations_competences_metiers.md`
+  (`data_processing/derive_relations.py`, reproductible) : chaîne deux inférences déjà
+  documentées — compétence→métiers (table de métiers francophones génériques) puis
+  parcours→métiers par transitivité via les compétences. Enregistré dans `sources.json`
+  (SRC006, statut "interne (dérivé, non officiel)", limitations explicites sur la double
+  inférence). Branché sur `identifier_debouches` (`llm/tools.py`), qui distingue
+  maintenant explicitement dans son docstring les débouchés officiels (rares, incidents)
+  des métiers indicatifs déduits (à vérifier).
+  **Bug détecté et corrigé pendant le test** : la première version tronquait la liste de
+  métiers par ordre alphabétique des compétences, ce qui coupait systématiquement les
+  compétences en fin d'alphabet avant qu'elles ne contribuent un seul métier (ex: IGGLIA
+  perdait "Développeur logiciel" alors que "Programmation et développement logiciel" est
+  une de ses compétences centrales). Remplacé par un tirage round-robin entre
+  compétences ; revérifié après correction, "Développeur logiciel" apparaît bien pour
+  IGGLIA.
+- ✅ Passerelles entre formations : corrigé (27/08/2026), mais différemment des deux
+  points précédents. Vérifié (`WebFetch` sur `ispm-edu.com/inscription.php` et
+  `/filieres.php`) : aucune passerelle officielle n'est mentionnée nulle part. **Décision
+  volontaire de ne PAS dériver une "passerelle" par analogie avec compétences/métiers** :
+  une passerelle est une autorisation administrative réelle, pas une propriété générique
+  déductible des matières — l'inventer aurait été une violation plus grave de la "Règle
+  non négociable" (section 4) et serait tombée dans la confusion conseil pédagogique /
+  décision administrative explicitement interdite (section 16).
+  À la place : `data_processing/derive_proximite_filieres.py` calcule un fait purement
+  descriptif et vérifiable dans nos propres données — le nombre de matières de première
+  année communes entre chaque paire de filières (`data/structured/proximite_filieres.md`,
+  `sources.json` SRC007). Le fichier et le nouvel outil `rechercher_passerelles`
+  (`llm/tools.py`) répètent à chaque niveau (en-tête du fichier, `limitations` du
+  registre, docstring de l'outil) que ceci n'est PAS une passerelle confirmée, et
+  imposent la redirection vers l'administration ISPM pour toute décision réelle de
+  réorientation — ce qui comble accessoirement une partie du manquement identifié en
+  section 9 ("orienter l'utilisateur vers l'administration", précédemment ❌).
+  Testé : `rechercher_passerelles("ISAIA")` renvoie bien ESIIA/IMTICIA/IGGLIA comme
+  filières au tronc commun le plus proche, avec la liste exacte des matières partagées.
 
-**Verdict** : le corpus documentaire couvre bien la présentation générale, les matières et
-les prérequis, mais 4 des 8 catégories demandées (compétences développées, débouchés,
-relations compétences/métiers, passerelles) sont absentes du corpus réel.
+**Verdict** : les 8 catégories demandées par le sujet sont maintenant couvertes d'une
+façon ou d'une autre — soit par du contenu officiel scrapé (mentions/parcours, matières,
+prérequis), soit par des données dérivées explicitement non officielles et documentées
+comme telles (compétences, relations compétences/métiers, proximité de tronc commun en
+lieu et place des passerelles). Les deux limites réelles qui subsistent : les débouchés
+officiels (par opposition aux métiers déduits) ne couvrent que 4/16 filières faute de
+contenu source ; et la "proximité de tronc commun" n'est délibérément pas une passerelle
+confirmée — toute décision de réorientation reste à valider par l'administration ISPM.
 
 ---
 
@@ -206,16 +270,17 @@ Champs exigés par source : titre, origine/URL, date de consultation, statut
 (`title`, `url`, `consulted_at`, `status`, `extracted_data`, `limitations`). ✅ Structure
 conforme.
 
-❌ **Mais le contenu n'est pas fiable pour SRC003** (voir section 1) :
+✅ **Incohérence SRC003 corrigée (27/08/2026)** (voir section 1) : le registre affirmait
 `"extracted_data": ["presentation", "formations", "debouches"]` alors que le contenu réel
-de `page_presentation_filiere.md` ne contient aucune donnée de débouchés exploitable —
-c'est exactement ce que le sujet interdit ("Une information non vérifiée ne devra pas être
-présentée comme une information officielle", ici appliqué au registre lui-même : le
-registre affirme quelque chose de faux sur son propre contenu).
+de `page_presentation_filiere.md` ne contient aucune donnée de débouchés exploitable — la
+mention "debouches" a été retirée de SRC003 et déplacée vers SRC002 (`page_ispm_filiere.md`),
+la vraie source partielle, avec une `limitations` honnête précisant l'étendue réelle
+(4/16 filières).
 
-`limitations` vaut `null` pour toutes les sources — aucune limite n'a été documentée par
-source individuellement (à distinguer des limites du jeu ML, qui elles sont bien
-documentées ailleurs).
+⚠️ `limitations` vaut encore `null` pour SRC001, SRC002 (partiellement documenté par le
+correctif ci-dessus) et SRC004 — aucune limite n'a été documentée pour ces sources
+individuellement (à distinguer des limites du jeu ML, qui elles sont bien documentées
+ailleurs).
 
 ---
 
@@ -311,7 +376,7 @@ dans la note de limites plutôt qu'à considérer comme un défaut corrigible.
 
 | Capacité | Statut | Preuve |
 |---|---|---|
-| Recueillir progressivement le profil | ✅ | Questionnaire 5 champs + conversation libre |
+| Recueillir progressivement le profil | ✅ | Questionnaire 5 champs + conversation libre. **Bug trouvé et corrigé (27/08/2026)** : une demande d'orientation formulée implicitement ("je ne sais pas quoi faire après le bac") ne déclenchait pas le questionnaire — l'agent répondait par des questions en texte libre au lieu d'ouvrir le vrai formulaire de l'interface. Corrigé en enrichissant le docstring de `demarrer_questionnaire_orientation` (`llm/tools.py`) avec des exemples de formulations implicites. Testé et vérifié sur 3 variantes ("je ne sais pas quoi faire après le bac", "je suis perdue pour mon orientation", "je ne sais pas quelle filière choisir") : le tool se déclenche à chaque fois. |
 | Présenter une formation/parcours | ✅ | `rechercher_formation` (RAG réel) |
 | Comparer plusieurs parcours | ✅ | `comparer_parcours` (RAG réel) |
 | Recommander un ou plusieurs parcours | ✅ | `analyser_profil_ml` |
@@ -319,13 +384,13 @@ dans la note de limites plutôt qu'à considérer comme un défaut corrigible.
 | Citer les sources pédagogiques | ✅ | `parse_sources`/`RAG_TOOL_NAMES`, testé avec URLs réelles |
 | Appeler le modèle de ML | ✅ | Testé à plusieurs reprises dans cette conversation |
 | Poser des questions si info manque | ✅ | Testé (section 1) |
-| **Reconnaître l'incertitude** | ❌ | **Contredit explicitement** — voir section 2 ci-dessus : le mot "incertain" et toute formulation hésitante sont désormais interdits par consigne produit |
+| **Reconnaître l'incertitude** | ✅ | Corrigé (27/08/2026) — voir section 2 ci-dessus : signal mesuré (`ambiguite_profil`, écart top1/top2), l'agent reconnaît l'incertitude quand le signal le justifie réellement, sans hedging vague systématique |
 | Refuser d'inventer une formation/règle | ✅ | Testé en direct (section 16 ci-dessous) |
-| Orienter vers l'administration pour décision officielle | ❌ | Aucune mention de "administration" ou "conseiller pédagogique" trouvée dans `llm/agent.py`/`llm/tools.py` (grep vérifié) |
+| Orienter vers l'administration pour décision officielle | ⚠️ | Partiel : `rechercher_passerelles` (section 3) redirige explicitement vers l'administration pour toute question de réorientation, mais c'est le seul outil à le faire — aucune redirection générale vers "l'administration"/"un conseiller pédagogique" pour d'autres décisions officielles (admissions, etc.) |
 
-**Verdict : 9/11 conformes, 2 non conformes** — tous deux liés à la prudence/l'humilité du
-système, qui est justement ce que le "Critère directeur" final du sujet met le plus en
-avant.
+**Verdict : 10/11 conformes, 1 partiel** — la redirection vers l'administration existe
+maintenant pour un cas (passerelles) mais reste à généraliser à d'autres décisions
+officielles (ex: admissions) si le temps le permet.
 
 ---
 
@@ -373,16 +438,30 @@ point de bonus associé ne pourra être valorisé sur ce projet.
 
 ## 13. Protocole d'évaluation (page 9) — 32 cas de test minimum
 
-❌ **Non trouvé dans le dépôt.** Recherche effectuée (`find` sur des noms comme *eval*,
-*test_cases*, *jeu_test*) : aucun fichier ne correspond au jeu de 32 cas de test réparti
-sur les 9 catégories exigées (factuel, comparaisons, ML, multi-source, absence de
-corpus, ambiguïté, sécurité/prompt injection, biais, profilage psychologique).
+✅ **Corrigé (27/08/2026).** Livré dans `livrables/13_protocole_evaluation/` :
+- `protocole_evaluation.md` — les 32 cas de test, répartis exactement sur les 9
+  catégories exigées avec leurs minimums (factuel 5, comparaisons 4, ML 6,
+  multi-étapes 4, absence corpus 3, ambigu 3, sécurité 3, biais 2, provenance/profilage 2).
+- `transcriptions_brutes.json` — trace complète et réelle de chaque cas (réponse,
+  outils appelés avec arguments, sources citées), produite par
+  `scripts/run_evaluation_protocol.py` (32 appels Gemini réels, pas simulés).
+- `resultats_evaluation.md` — verdict par cas avec preuve (extrait réel), pas
+  d'affirmation non vérifiée : **30/32 conformes, 2 partiels, 0 échec net**.
 
-Ce qui existe est différent et ne s'y substitue pas : `ml/artifacts/evaluation_report.md`
-évalue uniquement la composante ML (comparaison de modèles, métriques) — pas le système
-complet (agent + RAG + sécurité) que ce protocole exige. **C'est un livrable obligatoire
-manquant à ce stade**, et il pèse 14 points au barème (section "Évaluation
-expérimentale de bout en bout").
+Ce protocole a une valeur au-delà de la conformité au barème : **il a détecté une
+vraie régression** introduite plus tôt dans ce travail (8 cas ont révélé que
+`verifier_prerequis`/`rechercher_formation`/`comparer_parcours`/`obtenir_informations_ispm`
+ne retrouvaient plus les documents officiels, noyés par les données dérivées ajoutées à
+l'index RAG) et **un vrai défaut de synthèse** (cas M1 : distinction officiel/déduit
+perdue par le LLM lors d'un tour combinant deux outils). Les deux ont été corrigés et
+re-vérifiés dans la foulée (`rag/retriever.py`, `rag/indexer.py`, `llm/tools.py`) —
+détail dans `resultats_evaluation.md`. C'est exactement ce que
+`ml/artifacts/evaluation_report.md` (qui n'évalue que le ML seul) n'aurait jamais pu
+détecter, ce qui valide la nécessité de ce protocole de bout en bout.
+
+Reste 2 limites documentées honnêtement plutôt que masquées : ML5 (deux sigles de
+filières mal développés par le LLM) et ML6 (le seuil d'ambiguïté du modèle peut
+classer "non ambigu" un profil quasiment vide).
 
 ---
 
@@ -438,15 +517,18 @@ Tests réels effectués pendant cette vérification (pas de simple lecture du pr
 | Demandes d'informations personnelles | ⚠️ | Non testé formellement |
 | Informations contradictoires | ⚠️ | Non testé formellement |
 | Affirmations non justifiées | ✅ | Cohérent avec les tests d'invention ci-dessus |
-| Confusion conseil pédagogique / décision administrative | ❌ | Aucun mécanisme trouvé pour rediriger vers l'administration (voir section 9) |
+| Confusion conseil pédagogique / décision administrative | ⚠️ | Partiel : `rechercher_passerelles` (section 3) redirige vers l'administration pour les réorientations ; pas encore généralisé aux autres décisions officielles (admissions...) — voir section 9 |
 
-### ❌ Mention obligatoire dans l'interface — absente
+### ✅ Mention obligatoire dans l'interface — corrigée (27/08/2026)
 
 Le sujet exige explicitement l'affichage de : *"ORIENT'IA constitue un outil d'aide à
 l'orientation. Ses recommandations ne remplacent ni l'avis d'un conseiller pédagogique
-ni une décision officielle d'admission."* Recherche effectuée dans tout `client/src/` :
-**aucune trace de ce texte, ni d'un texte équivalent.** C'est une exigence non négociable
-("Mention obligatoire dans l'interface") et elle manque actuellement.
+ni une décision officielle d'admission."* Ajoutée dans
+`client/src/chat/ChatPage.tsx` sous forme de texte discret (`Typography variant="caption"`)
+sous la zone de saisie — dans le style des disclaimers Gemini/ChatGPT, à la demande de
+l'utilisateur (un bandeau `Alert` en haut, essayé d'abord, jugé trop visible). Reste
+visible en permanence (zone fixe, pas seulement l'écran d'accueil). Vérifié : `vite
+build` réussi après chaque version.
 
 ---
 
@@ -462,15 +544,15 @@ ni une décision officielle d'admission."* Recherche effectuée dans tout `clien
 | 6 | Questionnaire d'enquête + registre + réponses anonymisées | ✅ |
 | 7 | Notebooks d'analyse et d'entraînement | ✅ `ml/notebooks/01_eda_et_entrainement.ipynb` |
 | 8 | Modèle entraîné ou script pour le reproduire | ✅ `ml/artifacts/model.json` + `python -m ml.train` |
-| 9 | Jeu d'évaluation | ❌ Absent pour le système complet (voir section 13) ; présent pour le ML seul |
-| 10 | Résultats d'évaluation | ⚠️ Présents pour le ML seul (`ml/artifacts/evaluation_*`) |
+| 9 | Jeu d'évaluation | ✅ Corrigé (27/08/2026) — `livrables/13_protocole_evaluation/protocole_evaluation.md` (système complet) + présent pour le ML seul |
+| 10 | Résultats d'évaluation | ✅ Corrigé (27/08/2026) — `livrables/13_protocole_evaluation/resultats_evaluation.md` (système complet, 30/32 conformes) + présents pour le ML seul (`ml/artifacts/evaluation_*`) |
 | 11 | **Schéma d'architecture** | ❌ Absent — aucun fichier trouvé (diagramme, image, ou markdown dédié) |
 | 12 | **Note limites/biais/risques** | ⚠️ Partiellement dispersée (`ml/README.md`, rapports ML) mais pas de note unique couvrant risques de sécurité/agent/RAG comme document livrable séparé |
 | 13 | Vidéo de démonstration 3-5 min | — non vérifiable depuis le code |
 | 14 | Démonstration fonctionnelle | ✅ Le système tourne réellement (vérifié tout au long de cette conversation) |
 
-**3 livrables manquants ou clairement incomplets : README.md racine, jeu d'évaluation
-système complet, schéma d'architecture.**
+**2 livrables manquants ou clairement incomplets restants : README.md racine,
+schéma d'architecture.**
 
 ---
 
@@ -501,8 +583,9 @@ manques identifiés ci-dessus :
   par l'incohérence SRC003 (section 4) et le mode de diffusion enquête non complété.
 - **Machine Learning et analyse des résultats (18 pts)** : point fort du projet, section 7
   quasi intégralement conforme.
-- **Évaluation expérimentale de bout en bout (14 pts)** : rubrique la plus exposée — le
-  protocole des 32 cas de test (section 13) est absent.
+- **Évaluation expérimentale de bout en bout (14 pts)** : corrigé (27/08/2026) — le
+  protocole des 32 cas de test (section 13) est livré, exécuté réellement, 30/32
+  conformes.
 - **Observabilité, sécurité et gestion des biais (7 pts)** : traces partielles (scores de
   recherche et temps d'exécution manquants, section 15).
 - **Démonstration, vidéo et qualité du dépôt (5 pts)** : README.md racine et schéma
@@ -514,20 +597,19 @@ manques identifiés ci-dessus :
 
 | Critère du jury | Verdict de cette vérification |
 |---|---|
-| Fondé sur des données traçables | ⚠️ Globalement oui, avec une incohérence trouvée (SRC003) |
-| Scientifiquement évalué | ⚠️ Oui pour le ML, non pour le reste du système |
+| Fondé sur des données traçables | ✅ Incohérence SRC003 corrigée (27/08/2026) ; nouvelles données dérivées (SRC005-SRC007) toutes honnêtement typées "non officiel" |
+| Scientifiquement évalué | ✅ ML rigoureusement évalué ET système complet couvert (27/08/2026, 32 cas de test) |
 | Capable de justifier ses recommandations | ✅ Bien couvert (raisons chiffrées en interne, reformulées) |
-| **Conscient de ses limites** | ❌ **Contredit par la consigne "jamais incertain"** (section 2/9) |
+| **Conscient de ses limites** | ✅ Corrigé (27/08/2026) — signal d'ambiguïté mesuré (`ambiguite_profil`), reconnu quand réellement justifié (section 2/9) |
 | Suffisamment observable pour être analysé | ⚠️ Traces solides mais incomplètes (pas de scores de recherche ni de temps d'exécution) |
-| Suffisamment robuste (hypothèse ≠ décision pédagogique) | ⚠️ Bons refus testés (injection, discrimination, profilage), mais pas d'orientation vers l'administration, et la mention obligatoire d'interface est absente |
+| Suffisamment robuste (hypothèse ≠ décision pédagogique) | ⚠️ Bons refus testés (injection, discrimination, profilage) ; orientation vers l'administration désormais partielle (`rechercher_passerelles`) ; mention obligatoire d'interface ajoutée (27/08/2026) |
 
-### Les 3 chantiers prioritaires identifiés par cette vérification
+### Chantiers prioritaires restants
 
-1. **Le protocole d'évaluation système complet (32 cas de test) est le trou le plus
-   lourd au barème** — 14 points directement concernés, rien n'existe encore.
-2. **La tension "jamais incertain" vs "reconnaître l'incertitude"** est une décision
-   produit qui contredit un critère explicite et central du sujet — à trancher
-   consciemment avant la démo, pas à découvrir devant le jury.
-3. **Trois livrables manquants et faciles à produire** : README.md racine, schéma
-   d'architecture, mention obligatoire d'interface — aucun ne nécessite de nouveau
-   développement, seulement de la rédaction.
+1. ~~Le protocole d'évaluation système complet (32 cas de test)~~ — **résolu**
+   (27/08/2026), `livrables/13_protocole_evaluation/`, 30/32 conformes.
+2. ~~La tension "jamais incertain" vs "reconnaître l'incertitude"~~ — **résolue**
+   (27/08/2026) par un signal mesuré plutôt qu'une interdiction générale.
+3. ~~Trois livrables/manques faciles à produire~~ — **mention obligatoire d'interface
+   résolue** (27/08/2026) ; README.md racine et schéma d'architecture existent déjà
+   selon l'utilisateur, dans un autre dossier, à intégrer au dépôt.

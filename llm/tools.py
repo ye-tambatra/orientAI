@@ -11,7 +11,7 @@ import datetime
 
 from ml.inference import ModelNotTrainedError, get_model
 from ml.vocab import SERIES_BAC
-from rag.retriever import retrieve_context
+from rag.retriever import retrieve_context_for_entity
 
 
 def get_current_time() -> str:
@@ -43,7 +43,7 @@ def rechercher_formation(mot_cle: str) -> str:
         mot_cle: Le thème, domaine ou nom de filière recherché.
     """
     query = f"Filière ou formation en rapport avec {mot_cle} à l'ISPM"
-    return retrieve_context(query, n_results=20)
+    return retrieve_context_for_entity(mot_cle, query, n_results=4)
 
 
 def verifier_prerequis(filiere: str, serie_bac: str = "") -> str:
@@ -60,7 +60,7 @@ def verifier_prerequis(filiere: str, serie_bac: str = "") -> str:
     query = f"Conditions d'admission et prérequis pour la filière {filiere}"
     if serie_bac:
         query += f" pour un baccalauréat série {serie_bac}"
-    return retrieve_context(query, n_results=20)
+    return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
 def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
@@ -73,11 +73,11 @@ def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
         filiere_a: Le nom ou sigle de la première filière.
         filiere_b: Le nom ou sigle de la deuxième filière.
     """
-    contexte_a = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_a}", n_results=20
+    contexte_a = retrieve_context_for_entity(
+        filiere_a, f"Présentation et parcours de la filière {filiere_a}", n_results=3
     )
-    contexte_b = retrieve_context(
-        f"Présentation et parcours de la filière {filiere_b}", n_results=20
+    contexte_b = retrieve_context_for_entity(
+        filiere_b, f"Présentation et parcours de la filière {filiere_b}", n_results=3
     )
     return (
         f"== {filiere_a} ==\n{contexte_a}\n\n"
@@ -86,10 +86,20 @@ def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
 
 
 def rechercher_competences(filiere: str) -> str:
-    """Recherche les matières/compétences enseignées en première année d'une filière.
+    """Recherche les matières enseignées ET les compétences développées en
+    première année d'une filière.
 
     Utilise ceci quand l'utilisateur demande ce qu'on apprend/étudie dans une
-    filière donnée.
+    filière donnée, ou quelles compétences elle développe.
+
+    IMPORTANT — distingue toujours deux types de résultats dans ta réponse :
+    - les MATIÈRES (source SRC004, liste officielle scrapée) ;
+    - les COMPÉTENCES (source SRC005, marquée "déduit"/"non officiel" dans le
+      passage retourné) : ce sont des familles de compétences dérivées
+      mécaniquement des matières par l'équipe ORIENT'IA, PAS une liste
+      publiée par l'ISPM (le site officiel n'en publie aucune, vérifié). À
+      présenter explicitement comme une estimation ("d'après les matières,
+      cette filière développe plutôt...") et jamais comme un fait officiel.
 
     Args:
         filiere: Le nom ou sigle de la filière concernée.
@@ -98,7 +108,7 @@ def rechercher_competences(filiere: str) -> str:
         f"Liste des matières et compétences enseignées en première année "
         f"de la filière {filiere}"
     )
-    return retrieve_context(query, n_results=20)
+    return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
 def expliquer_recommandation(filiere: str, raison: str = "") -> str:
@@ -117,24 +127,85 @@ def expliquer_recommandation(filiere: str, raison: str = "") -> str:
     query = f"Pourquoi choisir la filière {filiere} : présentation, compétences et objectifs"
     if raison:
         query += f", en lien avec {raison}"
-    return retrieve_context(query, n_results=20)
+    return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
 def identifier_debouches(filiere: str) -> str:
     """Cherche les débouchés professionnels/perspectives de carrière d'une filière.
 
-    Attention : cette information n'est pas encore disponible dans la base de
-    connaissances. Si ce tool est appelé, informe l'utilisateur honnêtement
-    que cette information n'est pas encore disponible plutôt que d'inventer
-    une réponse.
+    Le corpus ISPM n'a pas de page dédiée aux débouchés officiels : quand ils
+    existent, ils apparaissent en une phrase incidente dans le texte de
+    présentation de CERTAINES filières seulement (ex: ISAIA, DTJA, EMII,
+    TEE) — traite ceci comme la seule source à peu près officielle.
+
+    Le passage retourné contient aussi des "métiers indicatifs" DÉDUITS
+    (double inférence matière→compétence→métier, voir
+    data/structured/relations_competences_metiers.md), marqués comme tels
+    dans le texte. Ces métiers ne sont PAS des débouchés confirmés par
+    l'ISPM : présente-les uniquement comme des pistes à vérifier auprès de
+    l'ISPM, jamais au même niveau de confiance qu'une phrase officielle.
+
+    Ne présente JAMAIS un débouché ou un métier comme confirmé s'il n'est
+    pas écrit noir sur blanc dans le passage retourné. Si le passage ne
+    contient ni phrase officielle ni métier déduit pour CETTE filière
+    précise, dis honnêtement à l'utilisateur que cette information n'est pas
+    disponible, plutôt que d'inventer ou de généraliser à partir de filières
+    voisines.
 
     Args:
         filiere: Le nom ou sigle de la filière concernée.
     """
-    return (
-        "Les débouchés professionnels ne sont pas encore renseignés dans la "
-        f"base de connaissances pour la filière {filiere}."
+    query = (
+        f"Débouchés professionnels, secteurs d'activité et métiers pour les "
+        f"diplômés de la filière {filiere} de l'ISPM"
     )
+    contexte = retrieve_context_for_entity(filiere, query, n_results=4)
+    # Consigne répétée ICI (pas seulement dans le docstring) : un test réel
+    # (protocole d'évaluation, cas M1) a montré qu'un tour combinant cet
+    # outil avec analyser_profil_ml pouvait, dans sa synthèse finale,
+    # présenter des métiers DÉDUITS (SRC006) comme "officiels" — alors que
+    # le disclaimer figurait bien dans le passage RAG mais n'a pas suffi. Le
+    # docstring n'est lu qu'au moment de décider d'appeler l'outil ; cette
+    # consigne, elle, fait partie du résultat vu au moment de rédiger la
+    # réponse finale, comme pour les outils ML.
+    return (
+        "[Rappel avant de répondre : dans le passage ci-dessous, seule une "
+        "phrase de présentation officielle incidente (si présente pour "
+        "cette filière) constitue un débouché confirmé par l'ISPM. Toute "
+        "liste \"métiers indicatifs (déduits...)\" est une estimation de "
+        "l'équipe, PAS une donnée ISPM — même si tu combines ce résultat "
+        "avec celui d'un autre outil (ex: analyser_profil_ml) dans la même "
+        "réponse, ne les fusionne jamais sous une même étiquette \"officiel\" "
+        "ou \"selon les éléments officiels\".]\n" + contexte
+    )
+
+
+def rechercher_passerelles(filiere: str) -> str:
+    """Cherche les filières les plus proches d'une filière donnée en termes
+    de programme (tronc commun de matières de première année).
+
+    ATTENTION — CECI N'EST PAS UNE PASSERELLE OFFICIELLE. Aucune page du
+    site ISPM ne mentionne de passerelle entre filières (vérifié le
+    27/08/2026). Le passage retourné (source SRC007) liste uniquement des
+    matières communes entre filières — un fait descriptif, PAS une
+    autorisation administrative de transfert. Un tronc commun important ne
+    prouve absolument pas qu'un changement de filière soit possible.
+
+    Utilise ceci quand l'utilisateur demande s'il peut changer de filière,
+    quelles filières se ressemblent, ou s'il existe des passerelles. Ta
+    réponse DOIT toujours :
+    1. présenter le tronc commun comme une simple proximité de programme,
+       jamais comme une passerelle confirmée ;
+    2. rediriger explicitement l'utilisateur vers l'administration de
+       l'ISPM pour toute question réelle de réorientation ou de transfert
+       (décision administrative, pas un conseil pédagogique que tu peux
+       trancher toi-même).
+
+    Args:
+        filiere: Le nom ou sigle de la filière de départ.
+    """
+    query = f"Filières proches par matières communes de {filiere}"
+    return retrieve_context_for_entity(filiere, query, n_results=6)
 
 
 def _profil_ml_indisponible(detail: str) -> str:
@@ -226,13 +297,28 @@ def analyser_profil_ml(
         f"{', '.join(r['filieres_ispm_correspondantes'])} (raison : {r['raison']})"
         for i, r in enumerate(ranking)
     ]
+    ambigu = ranking[0]["ambiguite_profil"]
+    consigne_ambiguite = (
+        "Signal du modèle : AMBIGU — le domaine n°1 et le n°2 sont "
+        "statistiquement trop proches pour trancher avec ce profil. Dis-le "
+        "explicitement et concrètement à l'utilisateur (ex: \"avec ce que "
+        "tu m'as dit, {A} et {B} se valent à peu près, difficile de "
+        "départager les deux pour l'instant\") puis demande PRÉCISÉMENT "
+        "l'information manquante la plus utile (compétence, série de bac "
+        "ou environnement de travail non encore fournis) pour départager. "
+        "Ce n'est pas une formule de politesse : ne le dis QUE parce que ce "
+        "signal est vrai."
+        if ambigu else
+        "Signal du modèle : NON ambigu — un domaine se détache "
+        "clairement des autres pour ce profil. Présente-le directement, "
+        "avec sa raison, sans ajouter de doute ou de réserve non justifiée."
+    )
     return (
         "[Résultat du modèle ML ORIENT'IA — classement statistique par "
         "domaine d'orientation, pas une décision officielle. NE MENTIONNE "
-        "AUCUN score numérique à l'utilisateur et n'emploie JAMAIS le mot "
-        "\"incertain\" : présente toujours le domaine en tête avec la "
-        "raison donnée, comme une piste concrète et argumentée] D'après le "
-        "profil déclaré, les domaines les plus compatibles sont :\n" +
+        f"AUCUN score numérique à l'utilisateur. {consigne_ambiguite}] "
+        "D'après le profil déclaré, les domaines les plus compatibles "
+        "sont :\n" +
         "\n".join(lines) +
         "\nCette raison reflète uniquement les matières/compétences/intérêts "
         "explicitement déclarés par l'utilisateur — jamais un trait de "
@@ -302,6 +388,13 @@ def demarrer_questionnaire_orientation(
     """Déclenche l'affichage d'un questionnaire interactif sur l'interface utilisateur pour recueillir ses préférences.
 
     Utilise OBLIGATOIREMENT ceci quand l'utilisateur demande une recommandation de filière ou d'orientation et qu'il manque au moins une des 5 informations (matière, environnement, motivation, compétence, série de bac).
+    Une demande d'orientation n'est pas toujours formulée explicitement ("recommande-moi
+    un parcours") : traite aussi comme telle toute expression implicite d'indécision
+    sur l'avenir scolaire/professionnel, par exemple "je ne sais pas quoi faire après
+    le bac", "je ne sais pas quelle filière choisir", "aide-moi à m'orienter", "je suis
+    perdu(e) pour mon orientation" — dans TOUS ces cas, appelle ce tool immédiatement
+    plutôt que de répondre par des questions en texte libre (qui n'affichent pas le
+    formulaire réel de l'interface).
     Ces 5 champs correspondent exactement aux variables du modèle ML (voir analyser_profil_ml) : ne raccourcis pas le questionnaire à 3 questions, la série de bac et la compétence comptent réellement dans le score.
     Si l'utilisateur a déjà mentionné certaines de ses préférences dans son message,
     remplis les arguments correspondants pour que le questionnaire saute ces questions.
@@ -386,7 +479,7 @@ def obtenir_informations_ispm() -> str:
     l'institut (historique court, localisation).
     """
     query = "Informations générales sur l'ISPM, contact, adresse, téléphone, email"
-    return retrieve_context(query, n_results=20)
+    return retrieve_context_for_entity("Contact", query, n_results=4)
 
 
 def calculer_score_adequation(
@@ -432,11 +525,22 @@ def calculer_score_adequation(
     result = model.score_adequation(profile, domaine)
     if "error" in result:
         return f"[Modèle ML] {result['error']}"
+    consigne_ambiguite = (
+        "Signal du modèle : AMBIGU — un autre domaine est statistiquement "
+        "presque à égalité avec celui-ci pour ce profil. Dis-le "
+        "explicitement (ex: \"ce domaine se défend, mais un autre te va "
+        "presque aussi bien avec ce que tu m'as dit\") plutôt que de "
+        "présenter ce score comme définitif, et demande l'information "
+        "manquante la plus utile pour départager."
+        if result["ambiguite_profil"] else
+        "Signal du modèle : NON ambigu pour ce profil — présente le "
+        "résultat directement, sans réserve non justifiée."
+    )
     return (
         f"[Résultat du modèle ML ORIENT'IA — NE MENTIONNE AUCUN score "
-        f"numérique à l'utilisateur et n'emploie JAMAIS le mot \"incertain\" "
-        f": reformule uniquement avec la raison ci-dessous, présentée comme "
-        f"une piste concrète] Adéquation avec le domaine « {result['label']} "
+        f"numérique à l'utilisateur : reformule uniquement avec la raison "
+        f"ci-dessous, présentée comme une piste concrète. {consigne_ambiguite}] "
+        f"Adéquation avec le domaine « {result['label']} "
         f"» (se classe {result['rang_parmi_domaines']}e sur "
         f"{result['nb_domaines']} pour ce profil), raison : "
         f"{result['raison']}. Filières ISPM correspondantes à explorer : "
@@ -569,6 +673,7 @@ TOOLS = [
     rechercher_competences,
     analyser_profil_ml,
     identifier_debouches,
+    rechercher_passerelles,
     calculer_score_adequation,
     identifier_points_forts,
     expliquer_recommandation_ml,

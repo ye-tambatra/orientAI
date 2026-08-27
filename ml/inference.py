@@ -35,6 +35,15 @@ ARTIFACT_PATH = Path(__file__).resolve().parent / "artifacts" / "model.json"
 
 PROVENANCE_LABEL = "Modèle ML ORIENT'IA (régression softmax, entraîné sur données synthétiques)"
 
+# Écart de probabilité en dessous duquel le domaine n°1 et le domaine n°2
+# sont jugés "trop proches pour trancher" — un signal MESURÉ, pas une
+# formule de politesse. Sert à répondre au sujet (section 9 : "reconnaître
+# l'incertitude" ; section 1 : "reconnaître les situations dans lesquelles
+# les informations disponibles ne permettent pas de conclure") sans revenir
+# à un hedging systématique et vague sur chaque réponse : l'ambiguïté n'est
+# signalée QUE quand ce chiffre le justifie réellement.
+AMBIGUITY_GAP_THRESHOLD = 0.10
+
 
 class ModelNotTrainedError(RuntimeError):
     pass
@@ -82,7 +91,9 @@ class OrientationModel:
         """
         x = encode_profile(profile).reshape(1, -1)
         proba = self.model.predict_proba(x)[0]
-        order = np.argsort(-proba)[:k]
+        order_full = np.argsort(-proba)
+        ambigu = self._is_ambiguous(proba, order_full)
+        order = order_full[:k]
         return [
             {
                 "domaine": self.classes[i],
@@ -90,9 +101,23 @@ class OrientationModel:
                 "score": round(float(proba[i]), 4),
                 "raison": self._reason_phrase(profile, self.classes[i]),
                 "filieres_ispm_correspondantes": list(DOMAINES[self.classes[i]].ispm_filieres),
+                # Vrai signal statistique (écart top1/top2), pas une
+                # estimation qualitative : voir AMBIGUITY_GAP_THRESHOLD.
+                "ambiguite_profil": ambigu,
             }
             for i in order
         ]
+
+    @staticmethod
+    def _is_ambiguous(proba: np.ndarray, order_full: np.ndarray,
+                       gap_threshold: float = AMBIGUITY_GAP_THRESHOLD) -> bool:
+        """True si le domaine n°1 et le domaine n°2 sont à moins de
+        `gap_threshold` de probabilité l'un de l'autre — le profil ne
+        permet alors pas de trancher clairement entre eux."""
+        if len(order_full) < 2:
+            return False
+        top1, top2 = proba[order_full[0]], proba[order_full[1]]
+        return (top1 - top2) < gap_threshold
 
     def score_adequation(self, profile: dict, domaine_id: str) -> dict:
         """`calculer_score_adequation` / `calculer_adequation` from the brief."""
@@ -109,6 +134,7 @@ class OrientationModel:
             "label": DOMAINES[domaine_id].label,
             "score": round(float(proba[class_index]), 4),
             "raison": self._reason_phrase(profile, domaine_id),
+            "ambiguite_profil": self._is_ambiguous(proba, order),
             "rang_parmi_domaines": rank,
             "nb_domaines": len(self.classes),
             "filieres_ispm_correspondantes": list(DOMAINES[domaine_id].ispm_filieres),

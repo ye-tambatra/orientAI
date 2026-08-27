@@ -25,9 +25,10 @@
     "description": "Page listant les différentes filières de formation proposées par l'ISPM",
     "extracted_data": [
       "formations",
-      "filieres"
+      "filieres",
+      "debouches"
     ],
-    "limitations": null
+    "limitations": "Les débouchés professionnels ne sont pas une rubrique dédiée : ils apparaissent de façon incidente, en une phrase, dans le texte de présentation de certaines filières seulement (ex: ISAIA, DTJA, EMII, TEE). La majorité des filières (IGGLIA, ESIIA, IMTICIA, CAA, FIC, EMP, IAA, PIP, AEE, GCA, ICMP, TEH) n'ont aucune mention explicite de débouchés dans cette page."
   },
   {
     "id": "SRC003",
@@ -40,10 +41,9 @@
     "description": "Page de présentation détaillée de l'institut et de ses différentes filières",
     "extracted_data": [
       "presentation",
-      "formations",
-      "debouches"
+      "formations"
     ],
-    "limitations": null
+    "limitations": "Cette page couvre l'historique, les objectifs et le cursus général de l'ISPM ; elle ne contient aucune information de débouchés professionnels par filière (corrigé le 2026-08-27 : le registre affirmait précédemment le contraire par erreur)."
   },
   {
     "id": "SRC004",
@@ -59,5 +59,48 @@
       "examens"
     ],
     "limitations": null
+  },
+  {
+    "id": "SRC005",
+    "title": "Compétences déduites par filière",
+    "type": "derived",
+    "file": "data/structured/competences_par_filiere.md",
+    "url": null,
+    "status": "interne (dérivé, non officiel)",
+    "consulted_at": "2026-08-27",
+    "description": "Familles de compétences dérivées mécaniquement des matières de SRC004 via une table matière→compétence documentée dans data_processing/derive_competences.py. Ne provient d'aucune page ISPM : vérifié le 27/08/2026 par consultation directe de ispm-edu.com/filieres.php et /presentation.php, qui ne publient aucune liste de compétences.",
+    "extracted_data": [
+      "competences_deduites"
+    ],
+    "limitations": "N'est PAS une donnée officielle ISPM — c'est une inférence de l'équipe à partir des matières, à ne jamais présenter à l'utilisateur comme un fait certifié par l'ISPM. Reproductible via `python -m data_processing.derive_competences`."
+  },
+  {
+    "id": "SRC006",
+    "title": "Relations compétences → métiers et parcours → métiers (indicatif)",
+    "type": "derived",
+    "file": "data/structured/relations_competences_metiers.md",
+    "url": null,
+    "status": "interne (dérivé, non officiel)",
+    "consulted_at": "2026-08-27",
+    "description": "Chaîne deux inférences : compétences déduites (SRC005) → métiers typiques (table générique de métiers francophones), puis parcours → métiers par transitivité. Généré par data_processing/derive_relations.py.",
+    "extracted_data": [
+      "competences_vers_metiers",
+      "parcours_vers_metiers_indicatif"
+    ],
+    "limitations": "Double inférence (matière→compétence→métier), donc encore plus éloignée d'un fait vérifié que SRC005. La table compétence→métier est une connaissance générale des intitulés de métiers francophones, sans lien spécifique établi avec Madagascar ou l'ISPM. À présenter comme piste indicative à vérifier, jamais comme débouché confirmé. Reproductible via `python -m data_processing.derive_relations`."
+  },
+  {
+    "id": "SRC007",
+    "title": "Proximité structurelle entre filières (tronc commun de matières)",
+    "type": "derived",
+    "file": "data/structured/proximite_filieres.md",
+    "url": null,
+    "status": "interne (dérivé, non officiel)",
+    "consulted_at": "2026-08-27",
+    "description": "Nombre et liste de matières de première année communes entre chaque paire de filières, calculé directement à partir de SRC004 (data/structured/lectures_list.md). Généré par data_processing/derive_proximite_filieres.py.",
+    "extracted_data": [
+      "matieres_communes_entre_filieres"
+    ],
+    "limitations": "N'EST PAS une passerelle officielle : vérifié le 27/08/2026 (WebFetch sur ispm-edu.com/inscription.php et /filieres.php), aucune passerelle n'est mentionnée par l'ISPM. Un tronc commun de matières ne prouve l'existence d'aucune autorisation de transfert entre filières. Toute question de réorientation réelle doit être posée à l'administration de l'ISPM, jamais répondue à partir de ce fichier seul. Reproductible via `python -m data_processing.derive_proximite_filieres`."
   }
 ]
