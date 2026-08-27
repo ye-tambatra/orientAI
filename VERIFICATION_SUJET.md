@@ -56,17 +56,23 @@ une justification générique.
 - Admissions → `verifier_prerequis` : ✅ réel, interroge le RAG.
 - Matières/compétences → `rechercher_competences` : ✅ réel, interroge le RAG
   (`data/structured/lectures_list.md` scrapé).
-- **Débouchés → `identifier_debouches` : ❌ non implémenté.** Le tool retourne
-  systématiquement *"Les débouchés professionnels ne sont pas encore renseignés dans la
-  base de connaissances"* (`llm/tools.py:123-137`), quel que soit l'appel. Vérifié : aucun
-  contenu de débouchés n'existe réellement dans le corpus scrapé
-  (`data/structured/page_presentation_filiere.md` ne contient qu'un lien de menu "Offres
-  d'emploi", pas de texte exploitable).
-  **Incohérence trouvée** : `data/structured/sources.json` (SRC003) déclare
-  `"extracted_data": ["presentation", "formations", "debouches"]` — le registre des sources
-  affirme que les débouchés ont été extraits, ce qui est faux. À corriger avant la
-  démonstration finale (le jury pose explicitement une question sur les débouchés dans les
-  exemples de la section "Démonstration finale").
+- **Débouchés → `identifier_debouches` : ✅ corrigé (27/08/2026).** Le tool interroge
+  désormais réellement le RAG (`llm/tools.py`), au lieu de renvoyer systématiquement un
+  stub "non disponible". Vérifié en conditions réelles après reconstruction de l'index
+  Chroma : le corpus ISPM n'a pas de page dédiée aux débouchés, mais
+  `data/structured/page_ispm_filiere.md` (SRC002) contient des phrases de débouché
+  incidentes pour certaines filières seulement (ISAIA, DTJA, EMII, TEE) — testé,
+  `identifier_debouches("ISAIA")` récupère bien *"les étudiants peuvent travailler dans
+  diverses branches de l'économie : les banques, les entreprises industrielles, les
+  entreprises commerciales"*. Pour une filière sans mention explicite (testé avec IGGLIA),
+  le docstring interdit désormais explicitement d'inventer ou de généraliser à partir de
+  filières voisines : le LLM doit reconnaître l'absence d'info pour cette filière précise.
+  **Incohérence corrigée** : `data/structured/sources.json` affirmait à tort (SRC003,
+  `presentation.php`) que des débouchés y avaient été extraits — c'était faux, ce fichier
+  ne contient qu'historique/objectifs/recteur. Le registre a été corrigé : la mention
+  "debouches" est déplacée vers SRC002 (la vraie source partielle), avec une `limitations`
+  honnête précisant que la majorité des filières n'ont aucune mention explicite de
+  débouchés dans le corpus.
 
 ### ⚠️ "reconnaître les situations dans lesquelles les informations disponibles ne permettent pas de conclure"
 
@@ -91,16 +97,12 @@ une justification générique.
 
 ## Verdict section 1
 
-4 capacités sur 6 pleinement conformes et vérifiées en conditions réelles. 2 points
-faibles identifiés, tous deux réels (pas hypothétiques) :
-1. `identifier_debouches` est un stub qui ne répond jamais — et le registre des sources
-   ment sur ce point.
-2. Le RAG n'a pas de seuil de pertinence : la détection du "je ne sais pas" n'est pas
+5 capacités sur 6 pleinement conformes et vérifiées en conditions réelles (mise à jour du
+27/08/2026 : `identifier_debouches` corrigé, voir ci-dessus). 1 point faible restant :
+1. Le RAG n'a pas de seuil de pertinence : la détection du "je ne sais pas" n'est pas
    mesurée, elle dépend entièrement du bon vouloir du LLM.
 
-**Recommandation** : traiter le point 1 en priorité (soit enrichir le corpus avec de vrais
-débouchés scrapés, soit documenter clairement la limite dans la note de limites/biais
-livrable) ; le point 2 peut être traité par un seuil de distance simple dans
+**Recommandation** : traiter ce point par un seuil de distance simple dans
 `retrieve_context` si le temps le permet.
 
 ---
@@ -181,19 +183,44 @@ Vérifié dans `data/structured/` :
 - ✅ Matières principales (`lectures_list.md`, 13 filières sur 16 couvertes réellement —
   voir `ml/filieres.py` pour la liste des 3 filières non couvertes, avec `assumed_matieres=True`
   documenté honnêtement comme hypothèse).
-- ❌ Compétences développées : pas de liste "compétences" séparée des matières — le
-  corpus scrapé ne distingue pas explicitement les deux.
+- ✅ Compétences développées : corrigé (27/08/2026). Vérifié par `WebFetch` en direct sur
+  `ispm-edu.com/filieres.php` et `/presentation.php` : le site officiel ne publie
+  réellement aucune liste de compétences distincte des matières — rien à scraper de plus.
+  Ajout d'un fichier dérivé documenté (`data/structured/competences_par_filiere.md`,
+  généré par `data_processing/derive_competences.py`, reproductible) : chaque matière est
+  rattachée à une famille de compétences via une table explicite, le résultat par filière
+  est marqué noir sur blanc "non officiel"/"déduit" dans le contenu lui-même et dans le
+  registre (`sources.json`, SRC005, statut "interne (dérivé, non officiel)"). L'outil
+  `rechercher_competences` (`llm/tools.py`) instruit désormais le LLM à toujours distinguer
+  matières (officielles, SRC004) et compétences (déduites, SRC005) devant l'utilisateur —
+  jamais présenter les secondes comme un fait ISPM.
+  **Effet de bord découvert et corrigé en marge** : tester ce fix a révélé que la
+  recherche vectorielle par défaut ratait le bon chunk (le chunk "ISAIA" ne sortait même
+  pas dans les 8 premiers résultats sur une requête "ISAIA" — vérifié). Ajout d'une
+  recherche par mot-clé priorisée sur le titre de section
+  (`rag/retriever.py:retrieve_by_keyword`/`retrieve_context_for_entity`), utilisée par
+  `rechercher_competences`. Testé : `rechercher_competences("ISAIA")` renvoie maintenant
+  en premiers résultats les bons chunks (compétences ISAIA, puis matières ISAIA), pour
+  IGGLIA/TEH/DTJA également. Ce correctif est local à cet outil ; les autres outils RAG
+  (`rechercher_formation`, `verifier_prerequis`, `comparer_parcours`...) ont
+  potentiellement le même problème de fond (section 10) mais n'ont pas été retouchés ici —
+  à traiter dans un point dédié si besoin.
 - ✅ Prérequis (`condition_access_en_premiere_annee.md`).
-- ❌ Débouchés professionnels : confirmé absent (voir section 1 — `identifier_debouches`
-  est un stub).
+- ⚠️ Débouchés professionnels : `identifier_debouches` interroge maintenant réellement
+  le RAG (corrigé le 27/08/2026, voir section 1), mais le corpus lui-même ne couvre
+  toujours que 4 des 16 filières (ISAIA, DTJA, EMII, TEE) avec une phrase incidente — ce
+  n'est pas une catégorie de données structurée et complète comme le sujet le demande.
 - ❌ Relations compétences/parcours/métiers : aucune donnée structurée de ce type dans
   le corpus documentaire (seule `ml/domaines.py` a une table domaine→filière, pas
   compétence→métier).
 - ❌ Passerelles entre formations : aucune mention trouvée dans le corpus scrapé.
 
-**Verdict** : le corpus documentaire couvre bien la présentation générale, les matières et
-les prérequis, mais 4 des 8 catégories demandées (compétences développées, débouchés,
-relations compétences/métiers, passerelles) sont absentes du corpus réel.
+**Verdict** : le corpus documentaire couvre bien la présentation générale, les matières,
+les prérequis et maintenant les compétences (déduites, clairement non officielles).
+L'outil de débouchés répond désormais honnêtement plutôt que de refuser systématiquement.
+Restent 2 des 8 catégories réellement absentes du corpus réel (relations
+compétences/métiers, passerelles), et les débouchés ne sont couverts que partiellement
+(4/16 filières) faute de contenu source.
 
 ---
 
@@ -206,16 +233,17 @@ Champs exigés par source : titre, origine/URL, date de consultation, statut
 (`title`, `url`, `consulted_at`, `status`, `extracted_data`, `limitations`). ✅ Structure
 conforme.
 
-❌ **Mais le contenu n'est pas fiable pour SRC003** (voir section 1) :
+✅ **Incohérence SRC003 corrigée (27/08/2026)** (voir section 1) : le registre affirmait
 `"extracted_data": ["presentation", "formations", "debouches"]` alors que le contenu réel
-de `page_presentation_filiere.md` ne contient aucune donnée de débouchés exploitable —
-c'est exactement ce que le sujet interdit ("Une information non vérifiée ne devra pas être
-présentée comme une information officielle", ici appliqué au registre lui-même : le
-registre affirme quelque chose de faux sur son propre contenu).
+de `page_presentation_filiere.md` ne contient aucune donnée de débouchés exploitable — la
+mention "debouches" a été retirée de SRC003 et déplacée vers SRC002 (`page_ispm_filiere.md`),
+la vraie source partielle, avec une `limitations` honnête précisant l'étendue réelle
+(4/16 filières).
 
-`limitations` vaut `null` pour toutes les sources — aucune limite n'a été documentée par
-source individuellement (à distinguer des limites du jeu ML, qui elles sont bien
-documentées ailleurs).
+⚠️ `limitations` vaut encore `null` pour SRC001, SRC002 (partiellement documenté par le
+correctif ci-dessus) et SRC004 — aucune limite n'a été documentée pour ces sources
+individuellement (à distinguer des limites du jeu ML, qui elles sont bien documentées
+ailleurs).
 
 ---
 

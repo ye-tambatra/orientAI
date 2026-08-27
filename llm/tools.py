@@ -11,7 +11,7 @@ import datetime
 
 from ml.inference import ModelNotTrainedError, get_model
 from ml.vocab import SERIES_BAC
-from rag.retriever import retrieve_context
+from rag.retriever import retrieve_context, retrieve_context_for_entity
 
 
 def get_current_time() -> str:
@@ -86,10 +86,20 @@ def comparer_parcours(filiere_a: str, filiere_b: str) -> str:
 
 
 def rechercher_competences(filiere: str) -> str:
-    """Recherche les matières/compétences enseignées en première année d'une filière.
+    """Recherche les matières enseignées ET les compétences développées en
+    première année d'une filière.
 
     Utilise ceci quand l'utilisateur demande ce qu'on apprend/étudie dans une
-    filière donnée.
+    filière donnée, ou quelles compétences elle développe.
+
+    IMPORTANT — distingue toujours deux types de résultats dans ta réponse :
+    - les MATIÈRES (source SRC004, liste officielle scrapée) ;
+    - les COMPÉTENCES (source SRC005, marquée "déduit"/"non officiel" dans le
+      passage retourné) : ce sont des familles de compétences dérivées
+      mécaniquement des matières par l'équipe ORIENT'IA, PAS une liste
+      publiée par l'ISPM (le site officiel n'en publie aucune, vérifié). À
+      présenter explicitement comme une estimation ("d'après les matières,
+      cette filière développe plutôt...") et jamais comme un fait officiel.
 
     Args:
         filiere: Le nom ou sigle de la filière concernée.
@@ -98,7 +108,7 @@ def rechercher_competences(filiere: str) -> str:
         f"Liste des matières et compétences enseignées en première année "
         f"de la filière {filiere}"
     )
-    return retrieve_context(query, n_results=3)
+    return retrieve_context_for_entity(filiere, query, n_results=4)
 
 
 def expliquer_recommandation(filiere: str, raison: str = "") -> str:
@@ -123,18 +133,28 @@ def expliquer_recommandation(filiere: str, raison: str = "") -> str:
 def identifier_debouches(filiere: str) -> str:
     """Cherche les débouchés professionnels/perspectives de carrière d'une filière.
 
-    Attention : cette information n'est pas encore disponible dans la base de
-    connaissances. Si ce tool est appelé, informe l'utilisateur honnêtement
-    que cette information n'est pas encore disponible plutôt que d'inventer
-    une réponse.
+    Le corpus ISPM n'a pas de page dédiée aux débouchés : quand ils existent,
+    ils apparaissent en une phrase incidente dans le texte de présentation de
+    CERTAINES filières seulement (ex: ISAIA, DTJA, EMII, TEE). La plupart des
+    autres filières n'ont aucune mention explicite de débouchés dans le
+    corpus.
+
+    Ne présente JAMAIS un débouché qui n'est pas écrit noir sur blanc dans le
+    passage retourné, et ne le déduis pas du nom ou de l'objectif général de
+    la filière. Si le passage ne contient aucune phrase concrète sur les
+    secteurs/métiers/employeurs de CETTE filière précise, dis honnêtement à
+    l'utilisateur que cette information n'est pas disponible dans la base de
+    connaissances pour cette filière, plutôt que d'inventer ou de généraliser
+    à partir de filières voisines.
 
     Args:
         filiere: Le nom ou sigle de la filière concernée.
     """
-    return (
-        "Les débouchés professionnels ne sont pas encore renseignés dans la "
-        f"base de connaissances pour la filière {filiere}."
+    query = (
+        f"Débouchés professionnels, secteurs d'activité et métiers pour les "
+        f"diplômés de la filière {filiere} de l'ISPM"
     )
+    return retrieve_context(query, n_results=3)
 
 
 def _profil_ml_indisponible(detail: str) -> str:

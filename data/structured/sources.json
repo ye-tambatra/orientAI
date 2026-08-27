@@ -25,9 +25,10 @@
     "description": "Page listant les différentes filières de formation proposées par l'ISPM",
     "extracted_data": [
       "formations",
-      "filieres"
+      "filieres",
+      "debouches"
     ],
-    "limitations": null
+    "limitations": "Les débouchés professionnels ne sont pas une rubrique dédiée : ils apparaissent de façon incidente, en une phrase, dans le texte de présentation de certaines filières seulement (ex: ISAIA, DTJA, EMII, TEE). La majorité des filières (IGGLIA, ESIIA, IMTICIA, CAA, FIC, EMP, IAA, PIP, AEE, GCA, ICMP, TEH) n'ont aucune mention explicite de débouchés dans cette page."
   },
   {
     "id": "SRC003",
@@ -40,10 +41,9 @@
     "description": "Page de présentation détaillée de l'institut et de ses différentes filières",
     "extracted_data": [
       "presentation",
-      "formations",
-      "debouches"
+      "formations"
     ],
-    "limitations": null
+    "limitations": "Cette page couvre l'historique, les objectifs et le cursus général de l'ISPM ; elle ne contient aucune information de débouchés professionnels par filière (corrigé le 2026-08-27 : le registre affirmait précédemment le contraire par erreur)."
   },
   {
     "id": "SRC004",
@@ -59,5 +59,19 @@
       "examens"
     ],
     "limitations": null
+  },
+  {
+    "id": "SRC005",
+    "title": "Compétences déduites par filière",
+    "type": "derived",
+    "file": "data/structured/competences_par_filiere.md",
+    "url": null,
+    "status": "interne (dérivé, non officiel)",
+    "consulted_at": "2026-08-27",
+    "description": "Familles de compétences dérivées mécaniquement des matières de SRC004 via une table matière→compétence documentée dans data_processing/derive_competences.py. Ne provient d'aucune page ISPM : vérifié le 27/08/2026 par consultation directe de ispm-edu.com/filieres.php et /presentation.php, qui ne publient aucune liste de compétences.",
+    "extracted_data": [
+      "competences_deduites"
+    ],
+    "limitations": "N'est PAS une donnée officielle ISPM — c'est une inférence de l'équipe à partir des matières, à ne jamais présenter à l'utilisateur comme un fait certifié par l'ISPM. Reproductible via `python -m data_processing.derive_competences`."
   }
 ]
